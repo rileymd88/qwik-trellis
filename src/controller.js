@@ -2,15 +2,6 @@ var qlik = window.require('qlik');
 
 export default ['$scope', '$element', function ($scope, $element) {
     var enigma = $scope.component.model.enigmaModel;
-    var cell = {
-        "name": "TEpnXZp",
-        "type": "VizlibTable",
-        "col": 0,
-        "row": 0,
-        "colspan": 8,
-        "rowspan": 7
-    };
-
 
     function getCellLayout(sheetCells) {
         return new Promise(function (resolve, reject) {
@@ -22,6 +13,40 @@ export default ['$scope', '$element', function ($scope, $element) {
                 }
             }
         })
+    }
+
+    function createTrellisObject(vizProp, i) {
+            // Create dim specific viz props
+            var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
+            var dimValue = $scope.layout.qHyperCube.qDataPages[0].qMatrix[i][0].qText;
+            var vizPropString = JSON.stringify(vizProp);
+            vizPropString = vizPropString.replaceAll('$(vDimSetFull)', "{<" + `${dimName}={'${dimValue}'}`  + ">}");
+            vizPropString = vizPropString.replaceAll('$(vDimSet)', `,${dimName}={'${dimValue}'}`);
+            vizPropString = vizPropString.replaceAll('$(vDim)', `'${dimValue}'`);
+            var vizPropJson = JSON.parse(vizPropString);
+
+            // Create object
+            $scope.sheet.createChild(vizPropJson).then(function(reply){
+                var cell = $scope.cellList[i];
+                cell.name = reply.id
+                cell.type = reply.genericType;
+                $scope.sheetProp.cells.push(cell);
+                console.log($scope.sheetProp.cells);
+                $scope.sheet.setProperties($scope.sheetProp);
+            }).catch(function(err){
+            })
+    }
+
+    
+    String.prototype.replaceAll = function(searchStr, replaceStr) {
+        var str = this;
+        // no match exists in string?
+        if(str.indexOf(searchStr) === -1) {
+            // return string
+            return str;
+        }
+        // replace and remove first match, and do another recursirve search/replace
+        return (str.replace(searchStr, replaceStr)).replaceAll(searchStr, replaceStr);
     }
 
     function getObjectCell(object) {
@@ -41,6 +66,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
 
     function createNewCells(blockColSize, blockRowSize, colSize, rowSize, shapeCount, col, row) {
+        var colOrg = col;
         return new Promise(function (resolve, reject) {
             // Calcs
             var blocks = blockColSize * blockRowSize;
@@ -52,24 +78,25 @@ export default ['$scope', '$element', function ($scope, $element) {
             var rowCount = 1;
 
             // Check to ensure blocks fit
-            console.log(blocks, howManyBlocks);
             if (blocks >= howManyBlocks && blockColSize >= colSize && blockRowSize >= rowSize) {
                 // Loop 12 times and create shapes
                 for (var i = 0; i < shapeCount; i++) {
                     // Add results to array
-                    cells.push({ col: col, row: row, colSpan: colSize, rowSpan: rowSize });
+                    cells.push({ name: '',type: '', col: col, row: row, colspan: colSize, rowspan: rowSize });
                     // Increment col and row arrays
                     if (col + colSize < blockColSize) {
                         col = col + colSize;
                     }
                     else {
-                        col = 0;
+                        col = colOrg;
                         row = rowCount * rowSize;
                         rowCount++
                     }
                 }
-                // Log results to browser console
-                console.log('cells', cells);
+                resolve(cells);
+            }
+            else {
+                reject('not enough space!');
             }
         })
     }
@@ -91,22 +118,36 @@ export default ['$scope', '$element', function ($scope, $element) {
                         enigma.app.getObject($scope.sheetId).then(function (sheet) {
                             // Create child
                             $scope.sheet = sheet;
-                            $scope.sheet.createChild($scope.vizProp).then(function (reply) {
-                                cell.name = reply.id;
                                 // Get Sheet properties
                                 $scope.sheet.getProperties().then(function (sheetProp) {
+                                    $scope.sheetProp = sheetProp;
                                     // Get Cell Layout of The Extension
                                     getCellLayout(sheetProp.cells).then(function (cells) {
-                                        // Create new cells
-                                        createNewCells(cells, $scope.vizObject);
+                                        $scope.extCells = cells;
+                                        // Get Cell Layout of the Viz
+                                        getObjectCell($scope.vizObject).then(function (cells) {
+                                            $scope.vizCells = cells;
+                                            // Create cells list
+                                            createNewCells($scope.extCells.colspan,
+                                                $scope.extCells.rowspan,
+                                                $scope.vizCells.colspan,
+                                                $scope.vizCells.rowspan,
+                                                $scope.layout.qHyperCube.qDataPages[0].qMatrix.length,
+                                                $scope.extCells.col,
+                                                $scope.extCells.row
+                                            ).then(function (cellList) {
+                                                $scope.cellList = cellList;
+                                                // Loop through cells and create objects
+                                                for(var i=0; i<$scope.cellList.length;i++) {
+                                                    createTrellisObject($scope.vizProp, i);
+                                                }
+                                            })
+                                        })
                                     })
-                                    sheetProp.cells.push(cell);
+                                    /* sheetProp.cells.push(cell);
                                     // Update and set sheet properties with new cells
-                                    $scope.sheetProp = sheetProp;
-                                    $scope.sheet.setProperties($scope.sheetProp);
+                                    $scope.sheet.setProperties($scope.sheetProp); */
                                 })
-                            }).catch(function (err) {
-                            });
                         })
                     })
                 })
