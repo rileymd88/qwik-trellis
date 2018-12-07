@@ -2,6 +2,7 @@ var qlik = window.require('qlik');
 
 export default ['$scope', '$element', function ($scope, $element) {
     var enigma = $scope.component.model.enigmaModel;
+    var app = qlik.currApp($scope);
 
     function getCellLayout(sheetCells) {
         return new Promise(function (resolve, reject) {
@@ -24,7 +25,6 @@ export default ['$scope', '$element', function ($scope, $element) {
             vizPropString = vizPropString.replaceAll('$(vDimSet)', `,${dimName}={'${dimValue}'}`);
             vizPropString = vizPropString.replaceAll('$(vDim)', `'${dimValue}'`);
             var vizPropJson = JSON.parse(vizPropString);
-
             // Create object
             $scope.sheet.createChild(vizPropJson).then(function(reply){
                 var cell = $scope.cellList[i];
