@@ -4,6 +4,32 @@ export default ['$scope', '$element', function ($scope, $element) {
     var enigma = $scope.component.model.enigmaModel;
     var app = qlik.currApp($scope);
 
+    $scope.$watch("layout.prop.columns", function () {
+        console.log($scope.layout.prop.columns);
+        $scope.colNum = parseInt($scope.layout.prop.columns);
+        $scope.rowNum =  Math.ceil($scope.layout.qHyperCube.qDataPages[0].qMatrix.length / $scope.colNum);
+        var rowPercent = 100/$scope.rowNum;
+        var px = $scope.rowNum + 1;
+        rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' +  px.toString() + 'px)';
+        $scope.rowHeight = {
+            "height": rowPercent
+        };
+        console.log($scope.rowHeight);
+    });
+
+    $scope.$watch("layout.qHyperCube.qDataPages[0].qMatrix.length", function () {
+        $scope.rowNum =  Math.ceil($scope.layout.qHyperCube.qDataPages[0].qMatrix.length / $scope.colNum);
+        var rowPercent = 100/$scope.rowNum;
+        var px = $scope.rowNum + 1;
+        px = px.toString();
+        rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px + ')';
+        $scope.rowHeight = {
+            "height": rowPercent
+        };
+    });
+
+
+
     function getCellLayout(sheetCells) {
         return new Promise(function (resolve, reject) {
             var cellLayout = "";
@@ -36,6 +62,7 @@ export default ['$scope', '$element', function ($scope, $element) {
             }).catch(function(err){
             })
     }
+
 
     
     String.prototype.replaceAll = function(searchStr, replaceStr) {
@@ -138,9 +165,14 @@ export default ['$scope', '$element', function ($scope, $element) {
                                             ).then(function (cellList) {
                                                 $scope.cellList = cellList;
                                                 // Loop through cells and create objects
-                                                for(var i=0; i<$scope.cellList.length;i++) {
+                                                app.visualization.create('piechart', ["score", "=Count(distinct matchLinkId)"], $scope.vizProp).then(function(vis){
+                                                    console.log(vis);
+                                                    var container = document.getElementById("container");
+                                                    vis.show(container);
+                                                })
+                                                /* for(var i=0; i<$scope.cellList.length;i++) {
                                                     createTrellisObject($scope.vizProp, i);
-                                                }
+                                                } */
                                             })
                                         })
                                     })

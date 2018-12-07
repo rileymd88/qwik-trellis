@@ -1,1 +1,4 @@
 <div class="chart-container" ng-click="onStart()">Chart Container</div>
+<div ng-repeat="x in [].constructor(rowNum) track by $index" ng-style="rowHeight" class="qwik-trellis-flex-grid">
+    <div ng-repeat="x in [].constructor(colNum) track by $index"  class="qwik-trellis-col"></div>
+</div>
