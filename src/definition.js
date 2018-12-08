@@ -21,7 +21,7 @@ function getMasterItems() {
           // Resolve an array with master objects.
           return resolve( model.layout.qAppObjectList.qItems.map(function(item) {
               return {
-                  value: item.qMeta.title + "|" + item.qInfo.qId,
+                  value: item.qInfo.qId,
                   label: item.qMeta.title
               };
           }) );

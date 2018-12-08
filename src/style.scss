@@ -1,10 +1,15 @@
 
+
+#container {
+    height: 100%;
+    width: 100%;
+}
+
 .qwik-trellis-flex-grid {
     display: flex;
     height: 100%;
   }
-  .qwik-trellis-col {
+  .qwik-trellis-cell {
     flex: 1;
-    background: blue;
     margin: 2px;
   }
