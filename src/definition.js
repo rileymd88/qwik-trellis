@@ -51,6 +51,22 @@ function getMasterItems() {
     defaultValue: "4"
   };
 
+  var advanced = {
+    ref: "prop.advanced",
+    label: "Advanced Mode",
+    component: 'switch',
+    type: "boolean",
+    options: [{
+        value: false,
+        label: "Off"
+    }, {
+        value: true,
+        label: "On"
+    }
+    ],
+    default: true
+}
+
 
   var linkSection = {
     // not necessary to define the type, component "expandable-items" will automatically
@@ -64,7 +80,8 @@ function getMasterItems() {
             label: "Vizualisation Selection",
             items: {
                 link: myTextBox,
-                col: colNum
+                col: colNum,
+                advanced: advanced
             }
         }
     }

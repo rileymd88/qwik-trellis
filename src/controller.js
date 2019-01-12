@@ -4,10 +4,8 @@ export default ['$scope', '$element', function ($scope, $element) {
     var enigma = $scope.component.model.enigmaModel;
     var app = qlik.currApp($scope);
     $scope.sessionIds = [];
-    console.log($scope.layout);
 
     $scope.$watch("layout.prop.columns", function () {
-        console.log($scope.layout.prop.columns);
         $scope.colNum = parseInt($scope.layout.prop.columns);
         $scope.rowNum = Math.ceil($scope.layout.qHyperCube.qDataPages[0].qMatrix.length / $scope.colNum);
         var rowPercent = 100 / $scope.rowNum;
@@ -16,16 +14,13 @@ export default ['$scope', '$element', function ($scope, $element) {
         $scope.rowHeight = {
             "height": rowPercent
         };
-        console.log($scope.rowHeight);
         createTrellisObjects();
     });
-    
+
     $scope.$watch("layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]", function () {
-        console.log($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]);
-        if(typeof $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0] != "undefined") {
+        if (typeof $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0] != "undefined") {
             // Create hypercube
-            getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function(cube){
-                console.log(cube);
+            getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
                 $scope.currentCube = cube;
                 createTrellisObjects();
             })
@@ -36,12 +31,12 @@ export default ['$scope', '$element', function ($scope, $element) {
             $scope.rowHeight = {
                 "height": rowPercent
             };
-            
+
         }
     });
 
     $scope.$watch("layout.prop.vizId", function () {
-       createTrellisObjects();
+        createTrellisObjects();
     });
 
     function getCube(dimDef) {
@@ -71,15 +66,15 @@ export default ['$scope', '$element', function ($scope, $element) {
         })
     }
 
+
     function createTrellisObjects() {
-         // Get viz object
-         if(typeof $scope.currentCube != 'undefined') {
-             // Destroy existing session objects
-            for(var i = 0; i<$scope.sessionIds.length;i++) {
-                enigma.app.destroySessionObject($scope.sessionIds[i]).then(function(res){
-                    console.log(res);
+        // Get viz object
+        if (typeof $scope.currentCube != 'undefined') {
+            // Destroy existing session objects
+            for (var i = 0; i < $scope.sessionIds.length; i++) {
+                enigma.app.destroySessionObject($scope.sessionIds[i]).then(function (res) {
                 });
-            } 
+            }
             enigma.app.getObject($scope.layout.prop.vizId).then(function (vizObject) {
                 $scope.vizObject = vizObject;
                 $scope.vizObject.getProperties().then(function (vizProp) {
@@ -87,55 +82,117 @@ export default ['$scope', '$element', function ($scope, $element) {
                     vizProp.qInfo.qId = "";
                     vizProp.qInfo.qType = vizProp.visualization;
                     $scope.vizProp = vizProp;
+                    console.log($scope.vizProp);
                     // loop through cells and create charts
-                    document.querySelectorAll('.qwik-trellis-cell').forEach(function(cell, i) {
-                        if(i < $scope.currentCube.length) {
-                            app.visualization.create($scope.vizProp.qInfo.qType, null, $scope.vizProp).then(function (vis) {
-                                vis.show(cell).then(function(viz){
-                                    $scope.sessionIds.push(viz.object.layout.qInfo.qId);
-                                });
-                            })
+                    document.querySelectorAll('.qwik-trellis-cell').forEach(function (cell, i) {
+                        if (i < $scope.currentCube.length) {
+                            var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
+                            var dimValue = $scope.layout.qHyperCube.qDataPages[0].qMatrix[i][0].qText;
+                            if ($scope.layout.prop.advanced) {
+                                    createChart($scope.vizProp.qInfo.qType, cell, null, dimName, dimValue).then(function (id) {
+                                        $scope.sessionIds.push(id);
+                                    })
+                            }
+                            else {
+                                createNewMeasure(dimName, dimValue).then(function (measures) {
+                                    createChart($scope.vizProp.qInfo.qType, cell, measures, null, null).then(function (id) {
+                                        $scope.sessionIds.push(id);
+                                    })
+                                })
+                            }
                         }
                     });
                 })
-            })   
+            })
         }
     }
 
-    function getCellLayout(sheetCells) {
+    function createNewMeasure(dimName, dimValue) {
         return new Promise(function (resolve, reject) {
-            var cellLayout = "";
-            for (var i = 0; i < sheetCells.length; i++) {
-                if (sheetCells[i].name == $scope.layout.qInfo.qId) {
-                    cellLayout = sheetCells[i];
-                    resolve(cellLayout);
+            var measures = [];
+            var vizProp = $scope.vizProp;
+            try {
+                var aggrList = ["Sum(", "Avg(", "Count(", "Min(", "Max("];
+                vizProp.qInfo.qId = "";
+                vizProp.qInfo.qType = vizProp.visualization;
+                // Loop through measures
+                for (var m = 0; m < vizProp.qHyperCubeDef.qMeasures.length; m++) {
+                    var finalMeasure = '';
+                    // Get Measure Definition from master item
+                    var mes = vizProp.qHyperCubeDef.qMeasures[m].qDef.qDef;
+                    // Loop through all possible aggregation types
+                    for (var a = 0; a < aggrList.length; a++) {
+                        var split = mes.split(aggrList[a]);
+                        // Loop through individual split measure
+                        if (split.length > 1) {
+                            for (var i = 0; i < split.length; i++) {
+                                if (split[i].length > 0) {
+                                    var removedSpaces = split[i].replace(/\s/g, '');
+                                    // If contains set analysis already - inject set analysis! TODO: Add if for all possible set analysis selectors
+                                    if (removedSpaces.includes('{<')) {
+                                        // Find position of <
+                                        var n = split[i].indexOf('<') + 1;
+                                        var output = [split[i].slice(0, n), `${dimName}={'${dimValue}'},`, split[i].slice(n)].join('');
+                                        var final = aggrList[a] + output;
+                                        finalMeasure += final;
+                                    }
+                                    // Otherwise inject complete set analysis
+                                    else {
+                                        var final = aggrList[a] + `{<${dimName}={'${dimValue}'}>}` + split[i];
+                                        finalMeasure += final;
+                                    }
+                                }
+                                else {
+                                    finalMeasure += split[i];
+                                }
+                            }
+
+                        }
+                    }
+                    measures.push(finalMeasure)
                 }
+                resolve(measures);
+            }
+            catch (err) {
+                reject(err);
             }
         })
     }
 
-    function createTrellisObject(vizProp, i) {
-        // Create dim specific viz props
-        var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
-        var dimValue = $scope.layout.qHyperCube.qDataPages[0].qMatrix[i][0].qText;
-        var vizPropString = JSON.stringify(vizProp);
-        vizPropString = vizPropString.replaceAll('$(vDimSetFull)', "{<" + `${dimName}={'${dimValue}'}` + ">}");
-        vizPropString = vizPropString.replaceAll('$(vDimSet)', `,${dimName}={'${dimValue}'}`);
-        vizPropString = vizPropString.replaceAll('$(vDim)', `'${dimValue}'`);
-        var vizPropJson = JSON.parse(vizPropString);
-        // Create object
-        $scope.sheet.createChild(vizPropJson).then(function (reply) {
-            var cell = $scope.cellList[i];
-            cell.name = reply.id
-            cell.type = reply.genericType;
-            $scope.sheetProp.cells.push(cell);
-            console.log($scope.sheetProp.cells);
-            $scope.sheet.setProperties($scope.sheetProp);
-        }).catch(function (err) {
+    function createChart(qType, cell, measures, dimName, dimValue) {
+        return new Promise(function (resolve, reject) {
+            if (!$scope.layout.prop.advanced) {
+                var prop = $scope.vizProp;
+                try {
+                    for (var m = 0; m < measures.length; m++) {
+                        prop.qHyperCubeDef.qMeasures[m].qDef.qDef = measures[m];
+                    }
+                }
+                catch (err) {
+                    reject(err);
+                }
+            }
+            else {
+                try {
+                    var vizPropString = JSON.stringify($scope.vizProp);
+                    vizPropString = vizPropString.replaceAll('$(vDimSetFull)', "{<" + `${dimName}={'${dimValue}'}` + ">}");
+                    vizPropString = vizPropString.replaceAll('$(vDimSet)', `,${dimName}={'${dimValue}'}`);
+                    vizPropString = vizPropString.replaceAll('$(vDim)', `'${dimValue}'`);
+                    var vizPropJson = JSON.parse(vizPropString);
+                    app.visualization.create(qType, null, vizPropJson).then(function (vis) {
+                        vis.show(cell).then(function (viz) {
+                            resolve(viz.object.layout.qInfo.qId);
+                        });
+                    })
+                }
+                catch (err) {
+                    reject(err);
+                }
+
+            }
+
         })
     }
-
-
 
     String.prototype.replaceAll = function (searchStr, replaceStr) {
         var str = this;
@@ -146,108 +203,5 @@ export default ['$scope', '$element', function ($scope, $element) {
         }
         // replace and remove first match, and do another recursirve search/replace
         return (str.replace(searchStr, replaceStr)).replaceAll(searchStr, replaceStr);
-    }
-
-    function getObjectCell(object) {
-        return new Promise(function (resolve, reject) {
-            object.getParent().then(function (parentSheet) {
-                enigma.app.getObject(parentSheet.id).then(function (parentSheet) {
-                    parentSheet.getProperties().then(function (sheetProp) {
-                        for (var i = 0; i < sheetProp.cells.length; i++) {
-                            if (sheetProp.cells[i].name == object.id) {
-                                resolve(sheetProp.cells[i]);
-                            }
-                        }
-                    })
-                })
-            })
-        })
-    }
-
-    function createNewCells(blockColSize, blockRowSize, colSize, rowSize, shapeCount, col, row) {
-        var colOrg = col;
-        return new Promise(function (resolve, reject) {
-            // Calcs
-            var blocks = blockColSize * blockRowSize;
-            var shapeSize = colSize * rowSize;
-            var howManyBlocks = shapeCount * shapeSize;
-
-            // Create blank array and other vars
-            var cells = [];
-            var rowCount = 1;
-
-            // Check to ensure blocks fit
-            if (blocks >= howManyBlocks && blockColSize >= colSize && blockRowSize >= rowSize) {
-                // Loop 12 times and create shapes
-                for (var i = 0; i < shapeCount; i++) {
-                    // Add results to array
-                    cells.push({ name: '', type: '', col: col, row: row, colspan: colSize, rowspan: rowSize });
-                    // Increment col and row arrays
-                    if (col + colSize < blockColSize) {
-                        col = col + colSize;
-                    }
-                    else {
-                        col = colOrg;
-                        row = rowCount * rowSize;
-                        rowCount++
-                    }
-                }
-                resolve(cells);
-            }
-            else {
-                reject('not enough space!');
-            }
-        })
-    }
-
-    $scope.onStart = function () {
-        
-                
-                // Get ext object
-                /*enigma.app.getObject($scope.layout.qInfo.qId).then(function (extObject) {
-                    $scope.extObject = extObject;
-                    // Get sheetID
-                     $scope.extObject.getParent().then(function (parentSheet) {
-                        $scope.sheetId = parentSheet.id;
-                        // Get sheet
-                        enigma.app.getObject($scope.sheetId).then(function (sheet) {
-                            $scope.sheet = sheet;
-                                // Get Sheet properties
-                                $scope.sheet.getProperties().then(function (sheetProp) {
-                                    $scope.sheetProp = sheetProp;
-                                    // Get Cell Layout of The Extension
-                                    getCellLayout(sheetProp.cells).then(function (cells) {
-                                        $scope.extCells = cells;
-                                        // Get Cell Layout of the Viz
-                                        getObjectCell($scope.vizObject).then(function (cells) {
-                                            $scope.vizCells = cells;
-                                            // Create cells list
-                                            createNewCells($scope.extCells.colspan,
-                                                $scope.extCells.rowspan,
-                                                $scope.vizCells.colspan,
-                                                $scope.vizCells.rowspan,
-                                                $scope.layout.qHyperCube.qDataPages[0].qMatrix.length,
-                                                $scope.extCells.col,
-                                                $scope.extCells.row
-                                            ).then(function (cellList) {
-                                                $scope.cellList = cellList;
-                                                // Loop through cells and create objects
-                                                app.visualization.create('barchart', ["name", "=Sum(goals)"], $scope.vizProp).then(function(vis){
-                                                    console.log(vis);
-                                                    var container = document.getElementById("container");
-                                                    vis.show(container);
-                                                })
-                                                 for(var i=0; i<$scope.cellList.length;i++) {
-                                                    createTrellisObject($scope.vizProp, i);
-                                                } 
-                                            })
-                                        })
-                                    })
-                                })
-                        })
-                    }) 
-                })*/
-
-         
     }
 }]
