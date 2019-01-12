@@ -1,3 +1,5 @@
+import { setTimeout } from "timers";
+
 var qlik = window.require('qlik');
 
 export default ['$scope', '$element', function ($scope, $element) {
@@ -82,20 +84,19 @@ export default ['$scope', '$element', function ($scope, $element) {
                     vizProp.qInfo.qId = "";
                     vizProp.qInfo.qType = vizProp.visualization;
                     $scope.vizProp = vizProp;
-                    console.log($scope.vizProp);
                     // loop through cells and create charts
                     document.querySelectorAll('.qwik-trellis-cell').forEach(function (cell, i) {
                         if (i < $scope.currentCube.length) {
                             var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
                             var dimValue = $scope.layout.qHyperCube.qDataPages[0].qMatrix[i][0].qText;
                             if ($scope.layout.prop.advanced) {
-                                    createChart($scope.vizProp.qInfo.qType, cell, null, dimName, dimValue).then(function (id) {
-                                        $scope.sessionIds.push(id);
-                                    })
+                                createChart($scope.vizProp.qInfo.qType, cell, null, dimName, dimValue, i).then(function (id) {
+                                    $scope.sessionIds.push(id);
+                                })
                             }
                             else {
                                 createNewMeasure(dimName, dimValue).then(function (measures) {
-                                    createChart($scope.vizProp.qInfo.qType, cell, measures, null, null).then(function (id) {
+                                    createChart($scope.vizProp.qInfo.qType, cell, measures, null, null, i).then(function (id) {
                                         $scope.sessionIds.push(id);
                                     })
                                 })
@@ -159,14 +160,19 @@ export default ['$scope', '$element', function ($scope, $element) {
         })
     }
 
-    function createChart(qType, cell, measures, dimName, dimValue) {
+    function createChart(qType, cell, measures, dimName, dimValue, i) {
         return new Promise(function (resolve, reject) {
             if (!$scope.layout.prop.advanced) {
-                var prop = $scope.vizProp;
                 try {
+                    var props = JSON.parse(JSON.stringify($scope.vizProp));
                     for (var m = 0; m < measures.length; m++) {
-                        prop.qHyperCubeDef.qMeasures[m].qDef.qDef = measures[m];
+                        props.qHyperCubeDef.qMeasures[m].qDef.qDef = measures[m];
                     }
+                    app.visualization.create(qType, null, props).then(function (vis) {
+                        vis.show(cell).then(function (viz) {
+                            resolve(viz.object.layout.qInfo.qId);
+                        });
+                    })
                 }
                 catch (err) {
                     reject(err);
@@ -190,9 +196,12 @@ export default ['$scope', '$element', function ($scope, $element) {
                 }
 
             }
-
         })
     }
+
+
+
+
 
     String.prototype.replaceAll = function (searchStr, replaceStr) {
         var str = this;
