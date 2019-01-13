@@ -9,6 +9,11 @@ export default ['$scope', '$element', function ($scope, $element) {
 
     $scope.$watch("layout.prop.columns", function () {
         $scope.colNum = parseInt($scope.layout.prop.columns);
+        if($scope.currentCube) {
+            if($scope.currentCube.length < $scope.colNum) {
+                $scope.colNum = $scope.currentCube.length -1;
+            }
+        }
         $scope.rowNum = Math.ceil($scope.layout.qHyperCube.qDataPages[0].qMatrix.length / $scope.colNum);
         var rowPercent = 100 / $scope.rowNum;
         var px = $scope.rowNum + 1;
@@ -20,7 +25,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     });
 
     $scope.$watch("layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]", function () {
-        if (typeof $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0] != "undefined") {
+        if (typeof $scope.layout.qHyperCube.qDimensionInfo[0] !== 'undefined') {
             // Create hypercube
             getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
                 $scope.currentCube = cube;
@@ -38,6 +43,18 @@ export default ['$scope', '$element', function ($scope, $element) {
     });
 
     $scope.$watch("layout.prop.vizId", function () {
+        createTrellisObjects();
+    });
+
+    $scope.$watch("layout.prop.advanced", function () {
+        createTrellisObjects();
+    });
+
+    $scope.$watch("layout.prop.showAllDims", function () {
+        createTrellisObjects();
+    });
+
+    $scope.$watch("layout.prop.label", function () {
         createTrellisObjects();
     });
 
@@ -72,6 +89,9 @@ export default ['$scope', '$element', function ($scope, $element) {
     function createTrellisObjects() {
         // Get viz object
         if (typeof $scope.currentCube != 'undefined') {
+            if($scope.currentCube.length < $scope.colNum) {
+                $scope.colNum = $scope.currentCube.length -1;
+            }
             // Destroy existing session objects
             for (var i = 0; i < $scope.sessionIds.length; i++) {
                 enigma.app.destroySessionObject($scope.sessionIds[i]).then(function (res) {
@@ -96,8 +116,9 @@ export default ['$scope', '$element', function ($scope, $element) {
                             }
                             else {
                                 createNewMeasure(dimName, dimValue).then(function (measures) {
-                                    createChart($scope.vizProp.qInfo.qType, cell, measures, null, null, i).then(function (id) {
+                                    createChart($scope.vizProp.qInfo.qType, cell, measures, dimName, dimValue, i).then(function (id) {
                                         $scope.sessionIds.push(id);
+                                        
                                     })
                                 })
                             }
@@ -127,28 +148,33 @@ export default ['$scope', '$element', function ($scope, $element) {
                         // Loop through individual split measure
                         if (split.length > 1) {
                             for (var i = 0; i < split.length; i++) {
-                                if (split[i].length > 0) {
-                                    var removedSpaces = split[i].replace(/\s/g, '');
-                                    // If contains set analysis already - inject set analysis! TODO: Add if for all possible set analysis selectors
-                                    if (removedSpaces.includes('{<')) {
-                                        // Find position of <
-                                        var n = split[i].indexOf('<') + 1;
-                                        var output = [split[i].slice(0, n), `${dimName}={'${dimValue}'},`, split[i].slice(n)].join('');
-                                        var final = aggrList[a] + output;
-                                        finalMeasure += final;
+                                    var next = i + 1;
+                                    if(i != split.length - 1) {
+                                        var nextRemovedSpaces = split[next].replace(/\s/g, '');
+                                        // If contains set analysis already - inject set analysis! TODO: Add if for all possible set analysis selectors
+                                        if (nextRemovedSpaces.includes('{<')) {
+                                            // Find position of <
+                                            var n = split[next].indexOf('<') + 1;
+                                            var output = [split[next].slice(0, n), `${dimName}={'${dimValue}'},`, split[next].slice(n)].join('');
+                                            var final = split[i] + aggrList[a] + output;
+                                            finalMeasure += final;
+                                        }
+                                        // Otherwise inject complete set analysis
+                                        else {
+                                            var final = split[i] + aggrList[a] + `{<${dimName}={'${dimValue}'}>}` + split[i];
+                                            finalMeasure += final;
+                                        }
                                     }
-                                    // Otherwise inject complete set analysis
                                     else {
-                                        var final = aggrList[a] + `{<${dimName}={'${dimValue}'}>}` + split[i];
-                                        finalMeasure += final;
+                                        finalMeasure += split[i];
                                     }
-                                }
-                                else {
-                                    finalMeasure += split[i];
-                                }
+                                    
                             }
 
                         }
+                    }
+                    if($scope.layout.prop.showAllDims) {
+                        finalMeasure += " + 0*Sum({1}1)";
                     }
                     measures.push(finalMeasure)
                 }
@@ -167,6 +193,63 @@ export default ['$scope', '$element', function ($scope, $element) {
                     var props = JSON.parse(JSON.stringify($scope.vizProp));
                     for (var m = 0; m < measures.length; m++) {
                         props.qHyperCubeDef.qMeasures[m].qDef.qDef = measures[m];
+                    }
+                    props.title = dimValue;
+                    if($scope.layout.prop.label == 'left') {
+                        var leftCharts = [];
+                        var chartInt = 0;
+                        for(var v = 0; v < $scope.rowNum; v++) {
+                            if(v == 0) {
+                                leftCharts.push(chartInt);
+                            }
+                            else {
+                                chartInt = parseInt(chartInt) + parseInt($scope.colNum);
+                                leftCharts.push(chartInt);
+                            }
+                        }
+                        var label = false;
+                        for(var c = 0; c < leftCharts.length;c++) {
+                            console.log('i is ', i, 'right is ', leftCharts[c], i == leftCharts[c]);
+                            if(i == leftCharts[c]) {
+                                label = true;
+                            }
+                        }
+                        if(!label) {
+                            props.dimensionAxis.show = 'none';
+                        }
+                    }
+                    if($scope.layout.prop.label == 'right') {
+                        var rightCharts = [];
+                        var chartInt = $scope.colNum - 1;
+                        for(var v = 0; v < $scope.rowNum; v++) {
+                            if(v == 0) {
+                                rightCharts.push(chartInt);
+                            }
+                            else {
+                                chartInt = parseInt(chartInt) + parseInt($scope.colNum);
+                                rightCharts.push(chartInt);
+                            }
+                        }
+                        var label = false;
+                        for(var c = 0; c < rightCharts.length;c++) {
+                            console.log('i is ', i, 'right is ', rightCharts[c], i == rightCharts[c]);
+                            if(i == rightCharts[c]) {
+                                label = true;
+                            }
+                        }
+                        if(!label) {
+                            props.dimensionAxis.show = 'none';
+                        }
+                    }
+                    if($scope.layout.prop.label == 'top') {
+                        if(i >= $scope.colNum) {
+                            props.dimensionAxis.show = 'none';
+                        }
+                    }
+                    if($scope.layout.prop.label == 'bottom') {
+                        if(i < $scope.colNum * $scope.rowNum - $scope.colNum) {
+                            props.dimensionAxis.show = 'none';
+                        }
                     }
                     app.visualization.create(qType, null, props).then(function (vis) {
                         vis.show(cell).then(function (viz) {

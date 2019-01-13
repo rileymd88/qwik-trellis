@@ -31,7 +31,7 @@ function getMasterItems() {
   });
 };
 
-  var myTextBox = {
+  var link = {
     ref: "prop.vizId",
     label: "Base Vizualisation",
     type: "string",
@@ -41,6 +41,21 @@ function getMasterItems() {
           return items;
       });
   }
+  };
+
+  var label = {
+    ref: "prop.label",
+    label: "Dimension Titles",
+    type: "string",
+    component: "dropdown",
+    options: [
+        {"value": "default", "label":"Chart Default"},
+        {"value": "left", "label":"Left Side Only"},
+        {"value": "right", "label":"Right Only"},
+        {"value": "top", "label":"Top Only"},
+        {"value": "bottom", "label":"Bottom Only"}
+    ],
+    defaultValue: "default"
   };
 
   var colNum = {
@@ -64,28 +79,43 @@ function getMasterItems() {
         label: "On"
     }
     ],
-    default: true
+    defaultValue: false
 }
 
+var showAllDimensionValues = {
+    ref: "prop.showAllDims",
+    label: "Show All Possible Dimensions",
+    component: 'switch',
+    type: "boolean",
+    options: [{
+        value: false,
+        label: "No"
+    }, {
+        value: true,
+        label: "Yes"
+    }
+    ],
+    defaultValue: false
+}
 
   var linkSection = {
-    // not necessary to define the type, component "expandable-items" will automatically
-    // default to "items"
-    // type: "items"
     component: "expandable-items",
     label: "Options",
     items: {
         header1: {
             type: "items",
-            label: "Vizualisation Selection",
+            label: "Qwik Trellis Options",
             items: {
-                link: myTextBox,
+                link: link,
                 col: colNum,
+                label: label,
+                showAllDimensionValues: showAllDimensionValues,
                 advanced: advanced
             }
         }
     }
   }
+
 
   return {
     type: "items",
