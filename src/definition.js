@@ -79,7 +79,7 @@ function getMasterItems() {
         label: "On"
     }
     ],
-    defaultValue: false
+    defaultValue: true
 }
 
 var showAllDimensionValues = {
