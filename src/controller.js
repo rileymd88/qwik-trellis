@@ -156,9 +156,12 @@ export default ['$scope', '$element', function ($scope, $element) {
                                     }
                                     // Otherwise inject complete set analysis
                                     else {
-                                        var final = split[i] + aggrList[a] + `{<${dimName}={'${dimValue}'}>}`;
+                                        var final = split[i] + aggrList[a] + `{<${dimName}={'${dimValue}'}>}` + split[i];
                                         finalMeasure += final;
                                     }
+                                }
+                                else {
+                                    finalMeasure += split[i];
                                 }
 
                             }
@@ -168,7 +171,6 @@ export default ['$scope', '$element', function ($scope, $element) {
                     if ($scope.layout.prop.showAllDims) {
                         finalMeasure += " + 0*Sum({1}1)";
                     }
-                    console.log(finalMeasure);
                     measures.push(finalMeasure)
                 }
                 resolve(measures);
