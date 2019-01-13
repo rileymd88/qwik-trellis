@@ -51,7 +51,7 @@ function getMasterItems() {
     options: [
         {"value": "default", "label":"Chart Default"},
         {"value": "left", "label":"Left Side Only"},
-        {"value": "right", "label":"Right Only"},
+        {"value": "right", "label":"Right Side Only"},
         {"value": "top", "label":"Top Only"},
         {"value": "bottom", "label":"Bottom Only"}
     ],
@@ -95,7 +95,7 @@ var showAllDimensionValues = {
         label: "Yes"
     }
     ],
-    defaultValue: false
+    defaultValue: true
 }
 
   var linkSection = {
