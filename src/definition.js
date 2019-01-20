@@ -82,21 +82,15 @@ function getMasterItems() {
     defaultValue: true
 }
 
+
+
 var showAllDimensionValues = {
     ref: "prop.showAllDims",
     label: "Show All Possible Dimensions",
-    component: 'switch',
-    type: "boolean",
-    options: [{
-        value: false,
-        label: "No"
-    }, {
-        value: true,
-        label: "Yes"
-    }
-    ],
-    defaultValue: true
-}
+    type: "string",
+    expression: "optional",
+    defaultValue: "1"
+  };
 
 var advancedMsg1 =  {
     type: "string",

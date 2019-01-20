@@ -1,5 +1,6 @@
-import { setTimeout } from "timers";
 
+
+var $sce = window.require('ngSanitize')
 var qlik = window.require('qlik');
 
 export default ['$scope', '$element', function ($scope, $element) {
@@ -9,7 +10,6 @@ export default ['$scope', '$element', function ($scope, $element) {
     $scope.sessionIds = [];
 
     $scope.$watch("layout.prop.columns", function () {
-        console.log($scope.layout.qInfo.qId);
         $scope.colNum = parseInt($scope.layout.prop.columns);
         if ($scope.currentCube) {
             if ($scope.currentCube.length < $scope.colNum) {
@@ -116,9 +116,9 @@ export default ['$scope', '$element', function ($scope, $element) {
                     // Modify properties of master item viz
                     vizProp.qInfo.qId = "";
                     vizProp.qInfo.qType = vizProp.visualization;
-                    $scope.vizProp = vizProp;
+                    $scope.vizProp = JSON.parse(JSON.stringify(vizProp));
                     // loop through cells and create charts
-                    document.querySelectorAll('.qwik-trellis-cell').forEach(function (cell, i) {
+                    $element[0].querySelectorAll('.qwik-trellis-cell').forEach(function (cell, i) {
                         if (i < $scope.currentCube.length) {
                             var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
                             var dimValue = $scope.layout.qHyperCube.qDataPages[0].qMatrix[i][0].qText;
@@ -183,7 +183,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                             currentMes = form;
                         }
                     }
-                    if ($scope.layout.prop.showAllDims) {
+                    if (parseInt($scope.layout.prop.showAllDims) == 1) {
                         currentMes += " + 0*Sum({1}1)";
                     }
                     currentMes = currentMes.replaceAll('$(vDimSetFull)', "{<" + `${dimName}={'${dimValue}'}` + ">}");
