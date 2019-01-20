@@ -9,6 +9,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     $scope.sessionIds = [];
 
     $scope.$watch("layout.prop.columns", function () {
+        console.log($scope.layout.qInfo.qId);
         $scope.colNum = parseInt($scope.layout.prop.columns);
         if ($scope.currentCube) {
             if ($scope.currentCube.length < $scope.colNum) {
@@ -26,7 +27,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     });
 
     $scope.$watch("layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]", function () {
-        if ($scope.layout.qHyperCube.qDimensionInfo[0] !== 'undefined') {
+        try {
             // Create hypercube
             getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
                 $scope.currentCube = cube;
@@ -39,7 +40,16 @@ export default ['$scope', '$element', function ($scope, $element) {
             $scope.rowHeight = {
                 "height": rowPercent
             };
-
+        }
+        catch (err) {
+            // Destroy existing session objects
+            if($scope.sessionIds.length) {
+                for (var i = 0; i < $scope.sessionIds.length; i++) {
+                    enigma.app.destroySessionObject($scope.sessionIds[i]).then(function (res) {
+                    });
+                }
+                $scope.showCharts = false;
+            }
         }
     });
 
@@ -112,8 +122,9 @@ export default ['$scope', '$element', function ($scope, $element) {
                         if (i < $scope.currentCube.length) {
                             var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
                             var dimValue = $scope.layout.qHyperCube.qDataPages[0].qMatrix[i][0].qText;
-                            createNewMeasure(dimName, dimValue).then(function (measures) {
+                            createNewMeasures(dimName, dimValue).then(function (measures) {
                                 createChart($scope.vizProp.qInfo.qType, cell, measures, dimName, dimValue, i).then(function (id) {
+                                    $scope.showCharts = true;
                                     $scope.sessionIds.push(id);
                                 })
                             })
@@ -124,54 +135,61 @@ export default ['$scope', '$element', function ($scope, $element) {
         }
     }
 
-    function createNewMeasure(dimName, dimValue) {
+    function createNewMeasures(dimName, dimValue) {
         return new Promise(function (resolve, reject) {
             var measures = [];
             var vizProp = $scope.vizProp;
             try {
-                var aggrList = ["Sum(", "Avg(", "Count(", "Min(", "Max("];
-                vizProp.qInfo.qId = "";
-                vizProp.qInfo.qType = vizProp.visualization;
+                var aggr = ["Sum(", "Avg(", "Count(", "Min(", "Max("];
                 // Loop through measures
                 for (var m = 0; m < vizProp.qHyperCubeDef.qMeasures.length; m++) {
-                    var finalMeasure = '';
+                    var currentMes = '';
                     // Get Measure Definition from master item
-                    var mes = vizProp.qHyperCubeDef.qMeasures[m].qDef.qDef;
+                    var formula = vizProp.qHyperCubeDef.qMeasures[m].qDef.qDef;
                     // Loop through all possible aggregation types
-                    for (var a = 0; a < aggrList.length; a++) {
-                        var split = mes.split(aggrList[a]);
-                        // Loop through individual split measure
-                        if (split.length > 1) {
-                            for (var i = 0; i < split.length; i++) {
-                                var next = i + 1;
-                                if (i != split.length - 1) {
-                                    var nextRemovedSpaces = split[next].replace(/\s/g, '');
-                                    // If contains set analysis already - inject set analysis! TODO: Add if for all possible set analysis selectors
-                                    if (nextRemovedSpaces.includes('{<')) {
-                                        // Find position of <
-                                        var n = split[next].indexOf('<') + 1;
-                                        var output = [split[next].slice(0, n), `${dimName}={'${dimValue}'},`, split[next].slice(n)].join('');
-                                        var final = split[i] + aggrList[a] + output;
-                                        finalMeasure += final;
+                    for (var i = 0; i < aggr.length; i++) {
+                        var form = ''
+                        if (i == 0) {
+                            form = formula;
+                        } else {
+                            form = currentMes;
+                        }
+                        var mes = '';
+                        var split = form.split(aggr[i]);
+                        // Check to see if form contains aggr
+                        if (split.length != 1) {
+                            // loop through split
+                            for (var s = 0; s < split.length; s++) {
+                                // check for set analysis in next
+                                var next = s + 1
+                                // ensure not last item
+                                if (typeof split[next] != 'undefined') {
+                                    // check if includes < and inject partial set
+                                    if (split[next].includes('{<')) {
+                                        mes += split[s] + aggr[i] + "$(vDimSet)";
                                     }
-                                    // Otherwise inject complete set analysis
+                                    // else inject full set
                                     else {
-                                        var final = split[i] + aggrList[a] + `{<${dimName}={'${dimValue}'}>}` + split[i];
-                                        finalMeasure += final;
+                                        mes += split[s] + aggr[i] + "$(vDimSetFull)";
                                     }
                                 }
+                                // Last item
                                 else {
-                                    finalMeasure += split[i];
+                                    mes += split[s];
                                 }
-
                             }
-
+                            currentMes = mes;
+                        } else {
+                            currentMes = form;
                         }
                     }
                     if ($scope.layout.prop.showAllDims) {
-                        finalMeasure += " + 0*Sum({1}1)";
+                        currentMes += " + 0*Sum({1}1)";
                     }
-                    measures.push(finalMeasure)
+                    currentMes = currentMes.replaceAll('$(vDimSetFull)', "{<" + `${dimName}={'${dimValue}'}` + ">}");
+                    currentMes = currentMes.replaceAll('$(vDimSet)', `,${dimName}={'${dimValue}'}`);
+                    currentMes = currentMes.replaceAll('$(vDim)', `'${dimValue}'`);
+                    measures.push(currentMes)
                 }
                 resolve(measures);
             }
@@ -195,7 +213,8 @@ export default ['$scope', '$element', function ($scope, $element) {
                     props = JSON.stringify(props);
                     props = props.replaceAll('$(vDimSetFull)', "{<" + `${dimName}={'${dimValue}'}` + ">}");
                     props = props.replaceAll('$(vDimSet)', `,${dimName}={'${dimValue}'}`);
-                    props = props.replaceAll('$(vDim)', `'${dimValue}'`);
+                    props = props.replaceAll('$(vDim)', `'${dimName}'`);
+                    props = props.replaceAll('$(vDimValue)', `'${dimValue}'`);
                     props = JSON.parse(props);
                 }
                 if (typeof props.dimensionAxis != 'undefined') {
@@ -257,14 +276,13 @@ export default ['$scope', '$element', function ($scope, $element) {
 
                 app.visualization.create(qType, null, props).then(function (vis) {
                     vis.show(cell).then(function (viz) {
-                        resolve(viz.object.layout.qInfo.qId);
+                        resolve(viz.model.id);
                     });
                 })
             }
             catch (err) {
                 reject(err);
             }
-
         })
     }
 

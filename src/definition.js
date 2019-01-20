@@ -98,6 +98,53 @@ var showAllDimensionValues = {
     defaultValue: true
 }
 
+var advancedMsg1 =  {
+    type: "string",
+    component: "text",
+    label: "When using advanced mode, you have the flexibility to choose where to insert set analysis and dimension values within the base master visualisation",
+    show: function (d) {
+        return d.prop.advanced;
+      }
+  }
+
+  var advancedMsg2 =  {
+    type: "string",
+    component: "text",
+    label:"$(vDimSetFull) will insert '{<dimensionName={'dimensionValue'}>}'",
+    show: function (d) {
+        return d.prop.advanced;
+      }
+  }
+
+  var advancedMsg3 =  {
+    type: "string",
+    component: "text",
+    label:"\n $(vDimSet) will insert 'dimensionName={'dimensionValue'},' ",
+    show: function (d) {
+        return d.prop.advanced;
+      }
+  }
+
+  var advancedMsg4 =  {
+    type: "string",
+    component: "text",
+    label:"\n $(vDim) will insert 'dimensionName'",
+    show: function (d) {
+        return d.prop.advanced;
+      }
+  }
+
+  var advancedMsg5 =  {
+    type: "string",
+    component: "text",
+    label: "\n $(vDimValue) will insert 'dimensionValue'",
+    show: function (d) {
+        return d.prop.advanced;
+      }
+  }
+
+
+
   var linkSection = {
     component: "expandable-items",
     label: "Options",
@@ -110,7 +157,12 @@ var showAllDimensionValues = {
                 col: colNum,
                 label: label,
                 showAllDimensionValues: showAllDimensionValues,
-                advanced: advanced
+                advanced: advanced,
+                advancedMsg1: advancedMsg1,
+                advancedMsg2: advancedMsg2,
+                advancedMsg3: advancedMsg3,
+                advancedMsg4: advancedMsg4,
+                advancedMsg5: advancedMsg5
             }
         }
     }
