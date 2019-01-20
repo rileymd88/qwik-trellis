@@ -200,7 +200,6 @@ export default ['$scope', '$element', function ($scope, $element) {
         return new Promise(function (resolve, reject) {
             try {
                 var props = JSON.parse(JSON.stringify($scope.vizProp));
-                console.log(props);
                 if (!$scope.layout.prop.advanced) {
                     for (var m = 0; m < measures.length; m++) {
                         props.qHyperCubeDef.qMeasures[m].qDef.qDef = measures[m];
