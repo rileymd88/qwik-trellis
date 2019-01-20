@@ -79,7 +79,7 @@ function getMasterItems() {
         label: "On"
     }
     ],
-    defaultValue: true
+    defaultValue: false
 }
 
 
