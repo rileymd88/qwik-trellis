@@ -111,9 +111,9 @@ export default ['$scope', '$element', function ($scope, $element) {
                 $scope.vizObject = vizObject;
                 $scope.vizObject.getProperties().then(function (vizProp) {
                     // Modify properties of master item viz
-                    vizProp.qInfo.qId = "";
-                    vizProp.qInfo.qType = vizProp.visualization;
                     $scope.vizProp = JSON.parse(JSON.stringify(vizProp));
+                    $scope.vizProp.qInfo.qId = "";
+                    $scope.vizProp.qInfo.qType =  $scope.vizProp.visualization;
                     // loop through cells and create charts
                     $element[0].querySelectorAll('.qwik-trellis-cell').forEach(function (cell, i) {
                         if (i < $scope.currentCube.length) {
@@ -200,6 +200,7 @@ export default ['$scope', '$element', function ($scope, $element) {
         return new Promise(function (resolve, reject) {
             try {
                 var props = JSON.parse(JSON.stringify($scope.vizProp));
+                console.log(props);
                 if (!$scope.layout.prop.advanced) {
                     for (var m = 0; m < measures.length; m++) {
                         props.qHyperCubeDef.qMeasures[m].qDef.qDef = measures[m];
