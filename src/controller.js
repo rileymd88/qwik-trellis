@@ -1,6 +1,3 @@
-
-
-var $sce = window.require('ngSanitize')
 var qlik = window.require('qlik');
 
 export default ['$scope', '$element', function ($scope, $element) {
