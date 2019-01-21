@@ -19,12 +19,13 @@ Only developers need to use qExt
 
 ## Using Advanced Mode
 Qwik Trellis will try to automatically inject the correct set analysis into your formula, however if you need more flexibility then there is an advanced mode available. When advanced mode is turned on, Qwik Trellis will automatically replace all placeholders found within all formulas in the master item vizulisation with the following values:
-| Placeholders  | Values                                     |
-| ------------- |:------------------------------------------:|
-| $(vDim)       | Dimension Name                             |
-| $(vDimValue)  | Dimension Value                            |
-| $(vDimSet)    | [Dimension Name]={'Dimension Value'},      |
-| $(vDimSetFull)| {<[Dimension Name]={'Dimension Value'}>}   |
+
+| Placeholders   | Values                                   |
+|----------------|------------------------------------------|
+| $(vDim)        | Dimension Name                           |
+| $(vDimValue)   | Dimension Value                          |
+| $(vDimSet)     | [Dimension Name]={'Dimension Value'},    |
+| $(vDimSetFull) | {<[Dimension Name]={'Dimension Value'}>} |
 
 
 
