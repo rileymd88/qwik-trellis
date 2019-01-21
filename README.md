@@ -1,6 +1,7 @@
 # Qwik Trellis
 Qwik Trellis is a Qlik Sense extension which allows you to create a trellis chart object based on an existing master vizulisation.
-![Qwik Trellis](https://raw.githubusercontent.com/rileymd88/data/master/qwik-trellis/qwiktrellis2.gif)
+![Qwik Trellis](https://raw.githubusercontent.com/rileymd88/data/master/qwik-trellis/qwiktrellis2.PNG)
+![Qwik Trellis GIF](https://raw.githubusercontent.com/rileymd88/data/master/qwik-trellis/qwiktrellis2.gif)
 
 ## Important Information
 >This extension code requires packing using the qExt tools. You can NOT download the repo and directly install. To get the correct approved version download from the releases page (file: qwik-trellis.zip) and install directly into Qlik Sense.
