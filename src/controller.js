@@ -40,7 +40,7 @@ export default ['$scope', '$element', function ($scope, $element) {
         }
         catch (err) {
             // Destroy existing session objects
-            if($scope.sessionIds.length) {
+            if ($scope.sessionIds.length) {
                 for (var i = 0; i < $scope.sessionIds.length; i++) {
                     enigma.app.destroySessionObject($scope.sessionIds[i]).then(function (res) {
                     });
@@ -87,8 +87,33 @@ export default ['$scope', '$element', function ($scope, $element) {
                 }]
             }, function (reply) {
                 var cube = reply.qHyperCube.qDataPages[0].qMatrix;
-                //app.enigma.destroySessionObject(reply.qInfo.qId);
                 resolve(cube);
+                app.enigma.destroySessionObject(reply.qInfo.qId);
+            });
+        })
+    }
+
+    function getMinMax(dimDef, mesDef) {
+        var dimDefMes = dimDef.replace('=', '');
+        return new Promise(function (resolve, reject) {
+            app.createCube({
+                "qDimensions": [{
+                    "qDef": {
+                        "qFieldDefs": [dimDef]
+                    }
+                }],
+                "qMeasures": [{
+                    "qDef": {
+                        "qDef": `mesDef`,
+                        "qLabel": "mes"
+                    }
+                }],
+                "qInitialDataFetch": [{
+                    qHeight: 50,
+                    qWidth: 2
+                }]
+            }, function (reply) {
+                resolve(reply);
             });
         })
     }
@@ -113,7 +138,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                     // Modify properties of master item viz
                     $scope.vizProp = JSON.parse(JSON.stringify(vizProp));
                     $scope.vizProp.qInfo.qId = "";
-                    $scope.vizProp.qInfo.qType =  $scope.vizProp.visualization;
+                    $scope.vizProp.qInfo.qType = $scope.vizProp.visualization;
                     // loop through cells and create charts
                     $element[0].querySelectorAll('.qwik-trellis-cell').forEach(function (cell, i) {
                         if (i < $scope.currentCube.length) {
@@ -137,58 +162,94 @@ export default ['$scope', '$element', function ($scope, $element) {
             var measures = [];
             var vizProp = $scope.vizProp;
             try {
-                var aggr = ["Sum(", "Avg(", "Count(", "Min(", "Max("];
+                var promises = [];
                 // Loop through measures
                 for (var m = 0; m < vizProp.qHyperCubeDef.qMeasures.length; m++) {
-                    var currentMes = '';
-                    // Get Measure Definition from master item
-                    var formula = vizProp.qHyperCubeDef.qMeasures[m].qDef.qDef;
-                    // Loop through all possible aggregation types
-                    for (var i = 0; i < aggr.length; i++) {
-                        var form = ''
-                        if (i == 0) {
-                            form = formula;
-                        } else {
-                            form = currentMes;
-                        }
-                        var mes = '';
-                        var split = form.split(aggr[i]);
-                        // Check to see if form contains aggr
-                        if (split.length != 1) {
-                            // loop through split
-                            for (var s = 0; s < split.length; s++) {
-                                // check for set analysis in next
-                                var next = s + 1
-                                // ensure not last item
-                                if (typeof split[next] != 'undefined') {
-                                    // check if includes < and inject partial set
-                                    if (split[next].includes('{<')) {
-                                        mes += split[s] + aggr[i] + "$(vDimSet)";
-                                    }
-                                    // else inject full set
-                                    else {
-                                        mes += split[s] + aggr[i] + "$(vDimSetFull)";
-                                    }
+                    promises.push(createMeasure(vizProp, m, dimName, dimValue));
+                }
+                Promise.all(promises).then(function(measures){
+                    resolve(measures)
+                })
+            }
+            catch (err) {
+                reject(err);
+            }
+        })
+    }
+
+    function createMeasure(vizProp, m, dimName, dimValue) {
+        return new Promise(function (resolve, reject) {
+            var aggr = ["Sum(", "Avg(", "Count(", "Min(", "Max("];
+            var formula = '';
+            var promises = [];
+            var currentMes = '';
+            // Get Measure Definition from master item
+            if (vizProp.qHyperCubeDef.qMeasures[m].qLibraryId) {
+                var promise = getMasterMeasure(vizProp, m);
+                promises.push(promise);
+            }
+            else {
+                var promise = vizProp.qHyperCubeDef.qMeasures[m].qDef.qDef;
+                promises.push(promise);
+            }
+            Promise.all(promises).then(function (values) {
+                formula = values[0];
+                // Loop through all possible aggregation types
+                for (var i = 0; i < aggr.length; i++) {
+                    var form = ''
+                    if (i == 0) {
+                        form = formula;
+                    } else {
+                        form = currentMes;
+                    }
+                    var mes = '';
+                    var split = form.split(aggr[i]);
+                    // Check to see if form contains aggr
+                    if (split.length != 1) {
+                        // loop through split
+                        for (var s = 0; s < split.length; s++) {
+                            // check for set analysis in next
+                            var next = s + 1
+                            // ensure not last item
+                            if (typeof split[next] != 'undefined') {
+                                // check if includes < and inject partial set
+                                if (split[next].includes('{<')) {
+                                    mes += split[s] + aggr[i] + "$(vDimSet)";
                                 }
-                                // Last item
+                                // else inject full set
                                 else {
-                                    mes += split[s];
+                                    mes += split[s] + aggr[i] + "$(vDimSetFull)";
                                 }
                             }
-                            currentMes = mes;
-                        } else {
-                            currentMes = form;
+                            // Last item
+                            else {
+                                mes += split[s];
+                            }
                         }
+                        currentMes = mes;
+                    } else {
+                        currentMes = form;
                     }
-                    if (parseInt($scope.layout.prop.showAllDims) == 1) {
-                        currentMes += " + 0*Sum({1}1)";
-                    }
-                    currentMes = currentMes.replaceAll('$(vDimSetFull)', "{<" + `${dimName}={'${dimValue}'}` + ">}");
-                    currentMes = currentMes.replaceAll('$(vDimSet)', `,${dimName}={'${dimValue}'}`);
-                    currentMes = currentMes.replaceAll('$(vDim)', `'${dimValue}'`);
-                    measures.push(currentMes)
                 }
-                resolve(measures);
+                if (parseInt($scope.layout.prop.showAllDims) == 1) {
+                    currentMes += " + 0*Sum({1}1)";
+                }
+                currentMes = currentMes.replaceAll('$(vDimSetFull)', "{<" + `${dimName}={'${dimValue}'}` + ">}");
+                currentMes = currentMes.replaceAll('$(vDimSet)', `,${dimName}={'${dimValue}'}`);
+                currentMes = currentMes.replaceAll('$(vDim)', `'${dimValue}'`);
+                resolve(currentMes);
+            })
+        })
+    }
+
+    function getMasterMeasure(vizProp, m) {
+        return new Promise(function (resolve, reject) {
+            try {
+                enigma.app.getMeasure(vizProp.qHyperCubeDef.qMeasures[m].qLibraryId).then(function (mesObject) {
+                    mesObject.getMeasure().then(function (mes) {
+                        resolve(mes.qDef);
+                    })
+                })
             }
             catch (err) {
                 reject(err);
@@ -202,6 +263,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                 var props = JSON.parse(JSON.stringify($scope.vizProp));
                 if (!$scope.layout.prop.advanced) {
                     for (var m = 0; m < measures.length; m++) {
+                        props.qHyperCubeDef.qMeasures[m].qLibraryId = "";
                         props.qHyperCubeDef.qMeasures[m].qDef.qDef = measures[m];
                     }
                     props.title = dimValue;
