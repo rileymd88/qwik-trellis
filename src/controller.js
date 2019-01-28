@@ -5,65 +5,114 @@ export default ['$scope', '$element', function ($scope, $element) {
     var enigma = $scope.component.model.enigmaModel;
     var app = qlik.currApp($scope);
     $scope.sessionIds = [];
-
-    $scope.$watch("layout.prop.columns", function () {
-        $scope.colNum = parseInt($scope.layout.prop.columns);
-        if ($scope.currentCube) {
-            if ($scope.currentCube.length < $scope.colNum) {
-                $scope.colNum = $scope.currentCube.length - 1;
-            }
-        }
-        $scope.rowNum = Math.ceil($scope.layout.qHyperCube.qDataPages[0].qMatrix.length / $scope.colNum);
-        var rowPercent = 100 / $scope.rowNum;
-        var px = $scope.rowNum + 1;
-        rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px.toString() + 'px)';
-        $scope.rowHeight = {
-            "height": rowPercent
-        };
+    setupStyles().then(function () {
         createTrellisObjects();
+    })
+    $scope.$watch("layout.prop.columns", function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            $scope.colNum = parseInt($scope.layout.prop.columns);
+               if ($scope.currentCube) {
+                   if ($scope.currentCube.length < $scope.colNum) {
+                       $scope.colNum = $scope.currentCube.length - 1;
+                   }
+               }
+               $scope.rowNum = Math.ceil($scope.layout.qHyperCube.qDataPages[0].qMatrix.length / $scope.colNum);
+               var rowPercent = 100 / $scope.rowNum;
+               var px = $scope.rowNum + 1;
+               rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px.toString() + 'px)';
+               $scope.rowHeight = {
+                   "height": rowPercent
+               };
+               createTrellisObjects();
+        }         
     });
 
-    $scope.$watch("layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]", function () {
-        try {
+    function setupStyles() {
+        return new Promise(function (resolve, reject) {
             // Create hypercube
             getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
                 $scope.currentCube = cube;
-                createTrellisObjects();
-            })
-            $scope.rowNum = Math.ceil($scope.layout.qHyperCube.qDataPages[0].qMatrix.length / $scope.colNum);
-            var rowPercent = 100 / $scope.rowNum;
-            var px = $scope.rowNum + 1;
-            rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px.toString() + 'px)';
-            $scope.rowHeight = {
-                "height": rowPercent
-            };
-        }
-        catch (err) {
-            // Destroy existing session objects
-            if ($scope.sessionIds.length) {
-                for (var i = 0; i < $scope.sessionIds.length; i++) {
-                    enigma.app.destroySessionObject($scope.sessionIds[i]).then(function (res) {
-                    });
+                $scope.colNum = parseInt($scope.layout.prop.columns);
+                if ($scope.currentCube) {
+                    if ($scope.currentCube.length < $scope.colNum) {
+                        $scope.colNum = $scope.currentCube.length - 1;
+                    }
                 }
-                $scope.showCharts = false;
+                $scope.rowNum = Math.ceil($scope.layout.qHyperCube.qDataPages[0].qMatrix.length / $scope.colNum);
+                var rowPercent = 100 / $scope.rowNum;
+                var px = $scope.rowNum + 1;
+                rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px.toString() + 'px)';
+                $scope.rowHeight = {
+                    "height": rowPercent
+                };
+                resolve();
+            })
+        })
+    }
+
+    $scope.$watch("layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]", function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            try {
+                // Create hypercube
+                getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
+                    $scope.currentCube = cube;
+                    createTrellisObjects();
+                })
+                $scope.rowNum = Math.ceil($scope.layout.qHyperCube.qDataPages[0].qMatrix.length / $scope.colNum);
+                var rowPercent = 100 / $scope.rowNum;
+                var px = $scope.rowNum + 1;
+                rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px.toString() + 'px)';
+                $scope.rowHeight = {
+                    "height": rowPercent
+                };
             }
+            catch (err) {
+                // Destroy existing session objects
+                if ($scope.sessionIds.length) {
+                    for (var i = 0; i < $scope.sessionIds.length; i++) {
+                        enigma.app.destroySessionObject($scope.sessionIds[i]).then(function (res) {
+                        });
+                    }
+                    $scope.showCharts = false;
+                }
+            }
+        }      
+    });
+
+    $scope.$watch("layout.prop.vizId", function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            createTrellisObjects();
         }
     });
 
-    $scope.$watch("layout.prop.vizId", function () {
-        createTrellisObjects();
+    $scope.$watch("layout.prop.advanced", function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            createTrellisObjects();
+        }
     });
 
-    $scope.$watch("layout.prop.advanced", function () {
-        createTrellisObjects();
+    $scope.$watch("layout.prop.showAllDims", function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            createTrellisObjects();
+        }
     });
 
-    $scope.$watch("layout.prop.showAllDims", function () {
-        createTrellisObjects();
+    $scope.$watch("layout.prop.label", function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            createTrellisObjects();
+        }
     });
 
-    $scope.$watch("layout.prop.label", function () {
-        createTrellisObjects();
+    $scope.$watch("layout.prop.labelMes", function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            createTrellisObjects();
+        }
+    });
+
+    $scope.$watch("layout.prop.autoRange", function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            createTrellisObjects();
+        }
     });
 
     function getCube(dimDef) {
@@ -93,34 +142,6 @@ export default ['$scope', '$element', function ($scope, $element) {
         })
     }
 
-    function getMinMax(dimDef, mesDef) {
-        var dimDefMes = dimDef.replace('=', '');
-        return new Promise(function (resolve, reject) {
-            app.createCube({
-                "qDimensions": [{
-                    "qDef": {
-                        "qFieldDefs": [dimDef]
-                    }
-                }],
-                "qMeasures": [{
-                    "qDef": {
-                        "qDef": `mesDef`,
-                        "qLabel": "mes"
-                    }
-                }],
-                "qInitialDataFetch": [{
-                    qHeight: 50,
-                    qWidth: 2
-                }]
-            }, function (reply) {
-                resolve(reply);
-            });
-        })
-    }
-
-
-
-
     function createTrellisObjects() {
         // Get viz object
         if (typeof $scope.currentCube != 'undefined') {
@@ -139,23 +160,79 @@ export default ['$scope', '$element', function ($scope, $element) {
                     $scope.vizProp = JSON.parse(JSON.stringify(vizProp));
                     $scope.vizProp.qInfo.qId = "";
                     $scope.vizProp.qInfo.qType = $scope.vizProp.visualization;
-                    // loop through cells and create charts
+                    $scope.sessionIds = [];
+                    var chartPromises = [];
+                    var measurePromises = [];
+                    var chartPromises = [];
+                    var objectPromises = [];
+                    var propPromises = [];
+                    var setPropPromises = [];
+                    var objects = "";
                     $element[0].querySelectorAll('.qwik-trellis-cell').forEach(function (cell, i) {
                         if (i < $scope.currentCube.length) {
                             var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
                             var dimValue = $scope.layout.qHyperCube.qDataPages[0].qMatrix[i][0].qText;
-                            createNewMeasures(dimName, dimValue).then(function (measures) {
-                                createChart($scope.vizProp.qInfo.qType, cell, measures, dimName, dimValue, i).then(function (id) {
-                                    $scope.showCharts = true;
-                                    $scope.sessionIds.push(id);
-                                })
-                            })
+                            var promise = createNewMeasures(dimName, dimValue);
+                            measurePromises.push(promise);
                         }
                     });
+                    Promise.all(measurePromises).then(function (measureProm) {
+                        $element[0].querySelectorAll('.qwik-trellis-cell').forEach(function (cell, i) {
+                            if (i < $scope.currentCube.length) {
+                                var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
+                                var dimValue = $scope.layout.qHyperCube.qDataPages[0].qMatrix[i][0].qText;
+                                var promise = createChart($scope.vizProp.qInfo.qType, cell, measureProm[i], dimName, dimValue, i);
+                                chartPromises.push(promise);
+                            }
+                        });
+                        Promise.all(chartPromises).then(function (viz) {
+                            $scope.maxValues = [];
+                            for (var v = 0; v < viz.length; v++) {
+                                $scope.sessionIds.push(viz[v].id);
+                                for (var m = 0; m < viz[v].model.layout.qHyperCube.qMeasureInfo.length; m++) {
+                                    $scope.maxValues.push(viz[v].model.layout.qHyperCube.qMeasureInfo[m].qMax);
+                                }
+                                $scope.max = 0;
+                                for (var t = 0; t < $scope.maxValues.length; t++) {
+                                    if ($scope.maxValues[t] > $scope.max) {
+                                        $scope.max = $scope.maxValues[t];
+                                    }
+                                }
+
+                            }
+
+                            for (var x = 0; x < $scope.sessionIds.length; x++) {
+                                var promise = enigma.app.getObject($scope.sessionIds[x]);
+                                objectPromises.push(promise);
+                            }
+                            Promise.all(objectPromises).then(function (obj) {
+                                objects = obj;
+                                for (var ob = 0; ob < objects.length; ob++) {
+                                    var promise = objects[ob].getProperties();
+                                    propPromises.push(promise);
+                                }
+                                Promise.all(propPromises).then(function (propPromise) {
+                                    for (var p = 0; p < propPromise.length; p++) {
+                                        var props = JSON.parse(JSON.stringify(propPromise[p]));
+                                        if ($scope.layout.prop.autoRange && typeof props.measureAxis != 'undefined') {
+                                            props.measureAxis.autoMinMax = false;
+                                            props.measureAxis.max = Math.round($scope.max * 1.1);
+                                            var promise = objects[p].setProperties(props);
+                                            setPropPromises.push(promise);
+                                        }
+                                    }
+                                    Promise.all(setPropPromises).then(function () {
+                                        $scope.showCharts = true;
+                                    })
+                                })
+                            })
+                        })
+                    })
                 })
             })
         }
     }
+
 
     function createNewMeasures(dimName, dimValue) {
         return new Promise(function (resolve, reject) {
@@ -167,7 +244,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                 for (var m = 0; m < vizProp.qHyperCubeDef.qMeasures.length; m++) {
                     promises.push(createMeasure(vizProp, m, dimName, dimValue));
                 }
-                Promise.all(promises).then(function(measures){
+                Promise.all(promises).then(function (measures) {
                     resolve(measures)
                 })
             }
@@ -276,6 +353,14 @@ export default ['$scope', '$element', function ($scope, $element) {
                     props = props.replaceAll('$(vDimValue)', `'${dimValue}'`);
                     props = JSON.parse(props);
                 }
+                // Auto Rang
+                if (typeof props.measureAxis != 'undefined') {
+                    if ($scope.layout.prop.autoRange) {
+                        props.measureAxis.measureMax = $scope.maxAxis;
+                        props.measureAxis.autoMinMax = false;
+                    }
+                }
+                // Dim Axis
                 if (typeof props.dimensionAxis != 'undefined') {
                     if ($scope.layout.prop.label == 'left') {
                         var leftCharts = [];
@@ -332,10 +417,68 @@ export default ['$scope', '$element', function ($scope, $element) {
                         }
                     }
                 }
+                // Mes Axis
+                if (typeof props.measureAxis != 'undefined') {
+                    if ($scope.layout.prop.labelMes == 'left') {
+                        var leftCharts = [];
+                        var chartInt = 0;
+                        for (var v = 0; v < $scope.rowNum; v++) {
+                            if (v == 0) {
+                                leftCharts.push(chartInt);
+                            }
+                            else {
+                                chartInt = parseInt(chartInt) + parseInt($scope.colNum);
+                                leftCharts.push(chartInt);
+                            }
+                        }
+                        var label = false;
+                        for (var c = 0; c < leftCharts.length; c++) {
+                            if (i == leftCharts[c]) {
+                                label = true;
+                            }
+                        }
+                        if (!label) {
+                            props.measureAxis.show = 'none';
+                        }
+                    }
+                    if ($scope.layout.prop.labelMes == 'right') {
+                        var rightCharts = [];
+                        var chartInt = $scope.colNum - 1;
+                        for (var v = 0; v < $scope.rowNum; v++) {
+                            if (v == 0) {
+                                rightCharts.push(chartInt);
+                            }
+                            else {
+                                chartInt = parseInt(chartInt) + parseInt($scope.colNum);
+                                rightCharts.push(chartInt);
+                            }
+                        }
+                        var label = false;
+                        for (var c = 0; c < rightCharts.length; c++) {
+                            if (i == rightCharts[c]) {
+                                label = true;
+                            }
+                        }
+                        if (!label) {
+                            props.measureAxis.show = 'none';
+                        }
+                    }
+                    if ($scope.layout.prop.labelMes == 'top') {
+                        if (i >= $scope.colNum) {
+                            props.measureAxis.show = 'none';
+                        }
+                    }
+                    if ($scope.layout.prop.labelMes == 'bottom') {
+                        if (i < $scope.colNum * $scope.rowNum - $scope.colNum) {
+                            props.measureAxis.show = 'none';
+                        }
+                    }
+                }
 
                 app.visualization.create(qType, null, props).then(function (vis) {
-                    vis.show(cell).then(function (viz) {
-                        resolve(viz.model.id);
+                    var viz = vis;
+                    vis.show(cell).then(function () {
+                        resolve(viz);
                     });
                 })
             }

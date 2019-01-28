@@ -5,7 +5,7 @@ define([], function () {
 
   var dimensions = {
     uses: "dimensions",
-    min: 0,
+    min: 1,
     max: 1
 };
 
@@ -58,6 +58,21 @@ function getMasterItems() {
     defaultValue: "default"
   };
 
+  var labelMes = {
+    ref: "prop.labelMes",
+    label: "Measure Titles",
+    type: "string",
+    component: "dropdown",
+    options: [
+        {"value": "default", "label":"Chart Default"},
+        {"value": "left", "label":"Left Side Only"},
+        {"value": "right", "label":"Right Side Only"},
+        {"value": "top", "label":"Top Only"},
+        {"value": "bottom", "label":"Bottom Only"}
+    ],
+    defaultValue: "default"
+  };
+
   var colNum = {
     ref: "prop.columns",
     label: "Number of Columns",
@@ -80,6 +95,22 @@ function getMasterItems() {
     }
     ],
     defaultValue: false
+}
+
+var autoRange = {
+    ref: "prop.autoRange",
+    label: "Auto Range",
+    component: 'switch',
+    type: "boolean",
+    options: [{
+        value: false,
+        label: "Off"
+    }, {
+        value: true,
+        label: "On"
+    }
+    ],
+    defaultValue: true
 }
 
 
@@ -149,8 +180,10 @@ var advancedMsg1 =  {
             items: {
                 link: link,
                 col: colNum,
-                label: label,
                 showAllDimensionValues: showAllDimensionValues,
+                label: label,
+                labelMes: labelMes,
+                autoRange: autoRange,
                 advanced: advanced,
                 advancedMsg1: advancedMsg1,
                 advancedMsg2: advancedMsg2,
