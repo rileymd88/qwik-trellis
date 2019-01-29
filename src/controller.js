@@ -216,7 +216,9 @@ export default ['$scope', '$element', function ($scope, $element) {
                                         var props = JSON.parse(JSON.stringify(propPromise[p]));
                                         if ($scope.layout.prop.autoRange && typeof props.measureAxis != 'undefined') {
                                             props.measureAxis.autoMinMax = false;
+                                            props.measureAxis.minMax = "max";
                                             props.measureAxis.max = Math.round($scope.max * 1.1);
+                                            console.log(props);
                                             var promise = objects[p].setProperties(props);
                                             setPropPromises.push(promise);
                                         }
