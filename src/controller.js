@@ -168,19 +168,30 @@ export default ['$scope', '$element', function ($scope, $element) {
                     var propPromises = [];
                     var setPropPromises = [];
                     var objects = "";
+                    
                     $element[0].querySelectorAll('.qwik-trellis-cell').forEach(function (cell, i) {
-                        if (i < $scope.currentCube.length) {
+                        if (i < $scope.currentCube.length -1) {
                             var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
-                            var dimValue = $scope.layout.qHyperCube.qDataPages[0].qMatrix[i][0].qText;
+                            try {
+                                var dimValue = $scope.layout.qHyperCube.qDataPages[0].qMatrix[i][0].qText;
+                            }
+                            catch(err) {
+                            }
+                            
                             var promise = createNewMeasures(dimName, dimValue);
                             measurePromises.push(promise);
                         }
                     });
                     Promise.all(measurePromises).then(function (measureProm) {
                         $element[0].querySelectorAll('.qwik-trellis-cell').forEach(function (cell, i) {
-                            if (i < $scope.currentCube.length) {
+                            if (i < $scope.currentCube.length -1) {
                                 var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
+                                try {
                                 var dimValue = $scope.layout.qHyperCube.qDataPages[0].qMatrix[i][0].qText;
+                                }
+                                catch(err) {
+                                }
+                                
                                 var promise = createChart($scope.vizProp.qInfo.qType, cell, measureProm[i], dimName, dimValue, i);
                                 chartPromises.push(promise);
                             }
@@ -218,7 +229,6 @@ export default ['$scope', '$element', function ($scope, $element) {
                                             props.measureAxis.autoMinMax = false;
                                             props.measureAxis.minMax = "max";
                                             props.measureAxis.max = Math.round($scope.max * 1.1);
-                                            console.log(props);
                                             var promise = objects[p].setProperties(props);
                                             setPropPromises.push(promise);
                                         }
@@ -232,6 +242,8 @@ export default ['$scope', '$element', function ($scope, $element) {
                     })
                 })
             })
+        }
+        else {
         }
     }
 
