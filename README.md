@@ -11,9 +11,14 @@ Qwik Trellis is a Qlik Sense extension which allows you to create a trellis char
 Only developers need to use qExt
 * [qExt](https://github.com/axisgroup/qExt)
 
+## Features in v0.3
+* Ability to automatically set the same range for all charts
+* Ability to hide measure labels on one side only
+* Performance improvements and bug fixes
+
 ## Features in v0.2
 * Ability to create Trellis chart based on master item and 1 dimension
-* Ability to hide labels on one side only
+* Ability to hide dimension labels on one side only
 * Ability to force all dimensions to be shown
 * Advanced mode which allows full flexibility of how formulas are handled in the end trellis objects
 
