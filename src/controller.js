@@ -81,15 +81,17 @@ export default ['$scope', '$element', function ($scope, $element) {
 
     $scope.$watch("layout.qHyperCube.qDataPages[0].qMatrix[0][0].qText", function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            if (typeof $scope.layout.qHyperCube.qDataPages != 'undefined') {
-                if (typeof $scope.layout.qHyperCube.qDimensionInfo.qDimensionInfo != 'undefined') {
-                    // Create hypercube
-                    getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
-                        $scope.currentCube = cube;
-                        createTrellisObjects();
-                    })
-                }
+            try {
+                // Create hypercube
+                getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
+                    $scope.currentCube = cube;
+                    createTrellisObjects();
+                })
             }
+            catch (err) {
+                console.log(err);
+            }
+                    
         }
     });
 
@@ -390,12 +392,12 @@ export default ['$scope', '$element', function ($scope, $element) {
             try {
                 var props = JSON.parse(JSON.stringify($scope.vizProp));
                 if (!$scope.layout.prop.advanced) {
-                    if(typeof measures != 'undefined') {
+                    if (typeof measures != 'undefined') {
                         for (var m = 0; m < measures.length; m++) {
                             props.qHyperCubeDef.qMeasures[m].qLibraryId = "";
                             props.qHyperCubeDef.qMeasures[m].qDef.qDef = measures[m];
                         }
-                    }   
+                    }
                     props.title = dimValue;
                 }
                 else {

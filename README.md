@@ -4,19 +4,24 @@ Qwik Trellis is a Qlik Sense extension which allows you to create a trellis char
 ![Qwik Trellis GIF](https://raw.githubusercontent.com/rileymd88/data/master/qwik-trellis/qwiktrellis2.gif)
 
 ## Important Information
->This extension code requires packing using the qExt tools. You can NOT download the repo and directly install. To get the correct approved version download from the releases page (file: qwik-trellis.zip) and install directly into Qlik Sense.
+>This extension code requires building using webpack. You can NOT download the repo and directly install. To get the correct approved version download from the releases page (file: qwik-trellis.zip) and install directly into Qlik Sense.
 
 * [GitHub releases page](https://github.com/rileymd88/qwik-trellis/releases)
 
-Only developers need to use qExt
-* [qExt](https://github.com/axisgroup/qExt)
+Only developers need to use webpack
 
-## Features in v0.3
+## Release Notes v0.4
+* Ability to sort trellis charts using standard qlik sorting properties
+* IE11 Support added
+* Performance improvements and bug fixes
+* Updated build process
+
+## Release Notes v0.3
 * Ability to automatically set the same range for all charts
 * Ability to hide measure labels on one side only
 * Performance improvements and bug fixes
 
-## Features in v0.2
+## Release Notes v0.2
 * Ability to create Trellis chart based on master item and 1 dimension
 * Ability to hide dimension labels on one side only
 * Ability to force all dimensions to be shown
