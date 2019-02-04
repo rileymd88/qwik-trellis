@@ -11,20 +11,20 @@ export default ['$scope', '$element', function ($scope, $element) {
     $scope.$watch("layout.prop.columns", function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.colNum = parseInt($scope.layout.prop.columns);
-               if ($scope.currentCube) {
-                   if ($scope.currentCube.length < $scope.colNum) {
-                       $scope.colNum = $scope.currentCube.length - 1;
-                   }
-               }
-               $scope.rowNum = Math.ceil($scope.currentCube.qDataPages[0].qMatrix.length / $scope.colNum);
-               var rowPercent = 100 / $scope.rowNum;
-               var px = $scope.rowNum + 1;
-               rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px.toString() + 'px)';
-               $scope.rowHeight = {
-                   "height": rowPercent
-               };
-               createTrellisObjects();
-        }         
+            if ($scope.currentCube) {
+                if ($scope.currentCube.length < $scope.colNum) {
+                    $scope.colNum = $scope.currentCube.length - 1;
+                }
+            }
+            $scope.rowNum = Math.ceil($scope.currentCube.qDataPages[0].qMatrix.length / $scope.colNum);
+            var rowPercent = 100 / $scope.rowNum;
+            var px = $scope.rowNum + 1;
+            rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px.toString() + 'px)';
+            $scope.rowHeight = {
+                "height": rowPercent
+            };
+            createTrellisObjects();
+        }
     });
 
     function setupStyles() {
@@ -76,7 +76,21 @@ export default ['$scope', '$element', function ($scope, $element) {
                     $scope.showCharts = false;
                 }
             }
-        }      
+        }
+    });
+
+    $scope.$watch("layout.qHyperCube.qDataPages[0].qMatrix[0][0].qText", function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            if (typeof $scope.layout.qHyperCube.qDataPages != 'undefined') {
+                if (typeof $scope.layout.qHyperCube.qDimensionInfo.qDimensionInfo != 'undefined') {
+                    // Create hypercube
+                    getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
+                        $scope.currentCube = cube;
+                        createTrellisObjects();
+                    })
+                }
+            }
+        }
     });
 
     $scope.$watch("layout.prop.vizId", function (newValue, oldValue) {
@@ -116,35 +130,52 @@ export default ['$scope', '$element', function ($scope, $element) {
     });
 
     function getCube(dimDef) {
-        var dimDefMes = dimDef.replace('=', '');
         return new Promise(function (resolve, reject) {
-            app.createCube({
-                "qDimensions": [{
-                    "qDef": {
-                        "qFieldDefs": [dimDef]
-                    }
-                }],
-                "qMeasures": [{
-                    "qDef": {
-                        "qDef": `Count({1}${dimDefMes})`,
-                        "qLabel": "dim"
-                    }
-                }],
-                "qInitialDataFetch": [{
-                    qHeight: 50,
-                    qWidth: 2
-                }]
-            }, function (reply) {
-                var cube = [];
-                for(var i = 0; i< reply.qHyperCube.qDataPages[0].qMatrix.length;i++) {
-                    if(reply.qHyperCube.qDataPages[0].qMatrix[i][0].qText != "-") {
-                       cube.push(reply.qHyperCube.qDataPages[0].qMatrix[i]); 
-                    }
-                }
-                resolve(cube);
-                app.enigma.destroySessionObject(reply.qInfo.qId);
-            });
+            try {
+                enigma.app.getObject($scope.layoutId).then(function (object) {
+                    object.getFullPropertyTree().then(function (properties) {
+                        var extProps = JSON.parse(JSON.stringify(properties));
+                        var qSortCriterias = extProps.qProperty.qHyperCubeDef.qDimensions[0].qDef.qSortCriterias;
+                        var autoSort = extProps.qProperty.qHyperCubeDef.qDimensions[0].qDef.autoSort;
+                        var qReverseSort = extProps.qProperty.qHyperCubeDef.qDimensions[0].qDef.qReverseSort;
+                        var dimDefMes = dimDef.replace('=', '');
+                        app.createCube({
+                            "qDimensions": [{
+                                "qDef": {
+                                    "qFieldDefs": [dimDef],
+                                    "qSortCriterias": qSortCriterias
+                                }
+                            }],
+                            "qMeasures": [{
+                                "qDef": {
+                                    "qDef": `Count({1}${dimDefMes})`,
+                                    "qLabel": "dim"
+                                }
+                            }],
+                            "qSortCriterias": qSortCriterias,
+                            "qInitialDataFetch": [{
+                                qHeight: 50,
+                                qWidth: 2
+                            }]
+                        }, function (reply) {
+                            var cube = [];
+                            for (var i = 0; i < reply.qHyperCube.qDataPages[0].qMatrix.length; i++) {
+                                if (reply.qHyperCube.qDataPages[0].qMatrix[i][0].qText != "-") {
+                                    cube.push(reply.qHyperCube.qDataPages[0].qMatrix[i]);
+                                }
+                            }
+                            resolve(cube);
+                            app.enigma.destroySessionObject(reply.qInfo.qId);
+                        });
+                    })
+                })
+            }
+            catch (err) {
+                reject(err);
+            }
+
         })
+
     }
 
     function createTrellisObjects() {
@@ -173,72 +204,79 @@ export default ['$scope', '$element', function ($scope, $element) {
                     var propPromises = [];
                     var setPropPromises = [];
                     var objects = "";
-                    
-                    $element[0].querySelectorAll('.qwik-trellis-cell').forEach(function (cell, i) {
-                        if (i < $scope.currentCube.length) {
-                            var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
-                            var dimValue = $scope.currentCube[i][0].qText; 
-                            var promise = createNewMeasures(dimName, dimValue);
-                            measurePromises.push(promise);
-                        }
-                    });
-                    Promise.all(measurePromises).then(function (measureProm) {
-                        $element[0].querySelectorAll('.qwik-trellis-cell').forEach(function (cell, i) {
-                            if (i < $scope.currentCube.length) {
+                    try {
+                        var qwikCells = $element[0].querySelectorAll('.qwik-trellis-cell');
+                        for (var q = 0; q < qwikCells.length; q++) {
+                            if (q < $scope.currentCube.length) {
                                 var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
-                                try {
-                                var dimValue = $scope.currentCube[i][0].qText;
-                                }
-                                catch(err) {
-                                }
-                                var promise = createChart($scope.vizProp.qInfo.qType, cell, measureProm[i], dimName, dimValue, i);
-                                chartPromises.push(promise);
+                                var dimValue = $scope.currentCube[q][0].qText;
+                                var promise = createNewMeasures(dimName, dimValue);
+                                measurePromises.push(promise);
                             }
-                        });
-                        Promise.all(chartPromises).then(function (viz) {
-                            $scope.maxValues = [];
-                            for (var v = 0; v < viz.length; v++) {
-                                $scope.sessionIds.push(viz[v].id);
-                                for (var m = 0; m < viz[v].model.layout.qHyperCube.qMeasureInfo.length; m++) {
-                                    $scope.maxValues.push(viz[v].model.layout.qHyperCube.qMeasureInfo[m].qMax);
-                                }
-                                $scope.max = 0;
-                                for (var t = 0; t < $scope.maxValues.length; t++) {
-                                    if ($scope.maxValues[t] > $scope.max) {
-                                        $scope.max = $scope.maxValues[t];
+                        }
+                        Promise.all(measurePromises).then(function (measureProm) {
+                            var qwikCells = $element[0].querySelectorAll('.qwik-trellis-cell');
+                            for (var q = 0; q < qwikCells.length; q++) {
+                                if (q < $scope.currentCube.length) {
+                                    var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
+                                    try {
+                                        var dimValue = $scope.currentCube[q][0].qText;
                                     }
+                                    catch (err) {
+                                    }
+                                    var promise = createChart($scope.vizProp.qInfo.qType, qwikCells[q], measureProm[q], dimName, dimValue, q);
+                                    chartPromises.push(promise);
                                 }
-
                             }
-
-                            for (var x = 0; x < $scope.sessionIds.length; x++) {
-                                var promise = enigma.app.getObject($scope.sessionIds[x]);
-                                objectPromises.push(promise);
-                            }
-                            Promise.all(objectPromises).then(function (obj) {
-                                objects = obj;
-                                for (var ob = 0; ob < objects.length; ob++) {
-                                    var promise = objects[ob].getProperties();
-                                    propPromises.push(promise);
-                                }
-                                Promise.all(propPromises).then(function (propPromise) {
-                                    for (var p = 0; p < propPromise.length; p++) {
-                                        var props = JSON.parse(JSON.stringify(propPromise[p]));
-                                        if ($scope.layout.prop.autoRange && typeof props.measureAxis != 'undefined') {
-                                            props.measureAxis.autoMinMax = false;
-                                            props.measureAxis.minMax = "max";
-                                            props.measureAxis.max = Math.round($scope.max * 1.1);
-                                            var promise = objects[p].setProperties(props);
-                                            setPropPromises.push(promise);
+                            Promise.all(chartPromises).then(function (viz) {
+                                $scope.maxValues = [];
+                                for (var v = 0; v < viz.length; v++) {
+                                    $scope.sessionIds.push(viz[v].id);
+                                    for (var m = 0; m < viz[v].model.layout.qHyperCube.qMeasureInfo.length; m++) {
+                                        $scope.maxValues.push(viz[v].model.layout.qHyperCube.qMeasureInfo[m].qMax);
+                                    }
+                                    $scope.max = 0;
+                                    for (var t = 0; t < $scope.maxValues.length; t++) {
+                                        if ($scope.maxValues[t] > $scope.max) {
+                                            $scope.max = $scope.maxValues[t];
                                         }
                                     }
-                                    Promise.all(setPropPromises).then(function () {
-                                        $scope.showCharts = true;
+
+                                }
+
+                                for (var x = 0; x < $scope.sessionIds.length; x++) {
+                                    var promise = enigma.app.getObject($scope.sessionIds[x]);
+                                    objectPromises.push(promise);
+                                }
+                                Promise.all(objectPromises).then(function (obj) {
+                                    objects = obj;
+                                    for (var ob = 0; ob < objects.length; ob++) {
+                                        var promise = objects[ob].getProperties();
+                                        propPromises.push(promise);
+                                    }
+                                    Promise.all(propPromises).then(function (propPromise) {
+                                        for (var p = 0; p < propPromise.length; p++) {
+                                            var props = JSON.parse(JSON.stringify(propPromise[p]));
+                                            if ($scope.layout.prop.autoRange && typeof props.measureAxis != 'undefined') {
+                                                props.measureAxis.autoMinMax = false;
+                                                props.measureAxis.minMax = "max";
+                                                props.measureAxis.max = Math.round($scope.max * 1.1);
+                                                var promise = objects[p].setProperties(props);
+                                                setPropPromises.push(promise);
+                                            }
+                                        }
+                                        Promise.all(setPropPromises).then(function () {
+                                            $scope.showCharts = true;
+                                            qlik.resize();
+                                        })
                                     })
                                 })
                             })
                         })
-                    })
+                    }
+                    catch (err) {
+                    }
+
                 })
             })
         }
@@ -352,10 +390,12 @@ export default ['$scope', '$element', function ($scope, $element) {
             try {
                 var props = JSON.parse(JSON.stringify($scope.vizProp));
                 if (!$scope.layout.prop.advanced) {
-                    for (var m = 0; m < measures.length; m++) {
-                        props.qHyperCubeDef.qMeasures[m].qLibraryId = "";
-                        props.qHyperCubeDef.qMeasures[m].qDef.qDef = measures[m];
-                    }
+                    if(typeof measures != 'undefined') {
+                        for (var m = 0; m < measures.length; m++) {
+                            props.qHyperCubeDef.qMeasures[m].qLibraryId = "";
+                            props.qHyperCubeDef.qMeasures[m].qDef.qDef = measures[m];
+                        }
+                    }   
                     props.title = dimValue;
                 }
                 else {
@@ -491,12 +531,6 @@ export default ['$scope', '$element', function ($scope, $element) {
                 app.visualization.create(qType, null, props).then(function (vis) {
                     var viz = vis;
                     vis.show(cell).then(function (test) {
-                        try {
-
-                        }
-                        catch(err) {
-                            test.object.explore.resize();
-                        }
                         resolve(viz);
                     });
                 })
