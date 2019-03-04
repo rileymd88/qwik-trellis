@@ -1,4 +1,5 @@
 var qlik = window.require('qlik');
+import chartTypes from './chartTypes.js';
 
 export default ['$scope', '$element', function ($scope, $element) {
     $scope.layoutId = $scope.layout.qInfo.qId;
@@ -89,9 +90,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                 })
             }
             catch (err) {
-                console.log(err);
             }
-                    
         }
     });
 
@@ -138,8 +137,6 @@ export default ['$scope', '$element', function ($scope, $element) {
                     object.getFullPropertyTree().then(function (properties) {
                         var extProps = JSON.parse(JSON.stringify(properties));
                         var qSortCriterias = extProps.qProperty.qHyperCubeDef.qDimensions[0].qDef.qSortCriterias;
-                        var autoSort = extProps.qProperty.qHyperCubeDef.qDimensions[0].qDef.autoSort;
-                        var qReverseSort = extProps.qProperty.qHyperCubeDef.qDimensions[0].qDef.qReverseSort;
                         var dimDefMes = dimDef.replace('=', '');
                         app.createCube({
                             "qDimensions": [{
@@ -180,7 +177,7 @@ export default ['$scope', '$element', function ($scope, $element) {
 
     }
 
-    function createTrellisObjects() {
+    async function createTrellisObjects() {
         // Get viz object
         if (typeof $scope.currentCube != 'undefined') {
             if ($scope.currentCube.length < $scope.colNum) {
@@ -188,47 +185,49 @@ export default ['$scope', '$element', function ($scope, $element) {
             }
             // Destroy existing session objects
             for (var i = 0; i < $scope.sessionIds.length; i++) {
-                enigma.app.destroySessionObject($scope.sessionIds[i]).then(function (res) {
-                });
+                await enigma.app.destroySessionObject($scope.sessionIds[i]);
             }
             enigma.app.getObject($scope.layout.prop.vizId).then(function (vizObject) {
                 $scope.vizObject = vizObject;
-                $scope.vizObject.getProperties().then(function (vizProp) {
+                $scope.vizObject.getProperties().then(async function (vizProp) {
                     // Modify properties of master item viz
+
                     $scope.vizProp = JSON.parse(JSON.stringify(vizProp));
                     $scope.vizProp.qInfo.qId = "";
                     $scope.vizProp.qInfo.qType = $scope.vizProp.visualization;
+                    for (var c = 0; c < chartTypes.length; c++) {
+                        if ($scope.vizProp.qInfo.qType == chartTypes[c].name) {
+                            $scope.qtProps = chartTypes[c];
+                        }
+                    }
                     $scope.sessionIds = [];
                     var chartPromises = [];
-                    var measurePromises = [];
+                    var propPromises = [];
                     var chartPromises = [];
                     var objectPromises = [];
-                    var propPromises = [];
+                    var propPromises2 = [];
                     var setPropPromises = [];
                     var objects = "";
                     try {
-                        var qwikCells = $element[0].querySelectorAll('.qwik-trellis-cell');
-                        for (var q = 0; q < qwikCells.length; q++) {
-                            if (q < $scope.currentCube.length) {
+                        for (var q = 0; q < $scope.currentCube.length; q++) {
+                            try {
                                 var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
                                 var dimValue = $scope.currentCube[q][0].qText;
-                                var promise = createNewMeasures(dimName, dimValue);
-                                measurePromises.push(promise);
+                                if (typeof $scope.qtProps != 'undefined') {
+                                    getAndSetMeasures($scope.vizProp, dimName, dimValue, $scope.qtProps.paths);
+                                }
+                                else {
+                                }
+                            }
+                            catch (err) {
                             }
                         }
-                        Promise.all(measurePromises).then(function (measureProm) {
-                            var qwikCells = $element[0].querySelectorAll('.qwik-trellis-cell');
-                            for (var q = 0; q < qwikCells.length; q++) {
-                                if (q < $scope.currentCube.length) {
-                                    var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
-                                    try {
-                                        var dimValue = $scope.currentCube[q][0].qText;
-                                    }
-                                    catch (err) {
-                                    }
-                                    var promise = createChart($scope.vizProp.qInfo.qType, qwikCells[q], measureProm[q], dimName, dimValue, q);
-                                    chartPromises.push(promise);
-                                }
+                        /* Promise.all(propPromises).then(function (props) {
+                            for (var q = 0; q < $scope.currentCube.length; q++) {
+                                var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
+                                var dimValue = $scope.currentCube[q][0].qText;
+                                var promise = createChart(props[q], dimName, dimValue, q);
+                                chartPromises.push(promise);
                             }
                             Promise.all(chartPromises).then(function (viz) {
                                 $scope.maxValues = [];
@@ -243,20 +242,21 @@ export default ['$scope', '$element', function ($scope, $element) {
                                             $scope.max = $scope.maxValues[t];
                                         }
                                     }
-
                                 }
 
                                 for (var x = 0; x < $scope.sessionIds.length; x++) {
                                     var promise = enigma.app.getObject($scope.sessionIds[x]);
                                     objectPromises.push(promise);
                                 }
+
+
                                 Promise.all(objectPromises).then(function (obj) {
                                     objects = obj;
                                     for (var ob = 0; ob < objects.length; ob++) {
                                         var promise = objects[ob].getProperties();
-                                        propPromises.push(promise);
+                                        propPromises2.push(promise);
                                     }
-                                    Promise.all(propPromises).then(function (propPromise) {
+                                    Promise.all(propPromises2).then(function (propPromise) {
                                         for (var p = 0; p < propPromise.length; p++) {
                                             var props = JSON.parse(JSON.stringify(propPromise[p]));
                                             if ($scope.layout.prop.autoRange && typeof props.measureAxis != 'undefined') {
@@ -274,9 +274,11 @@ export default ['$scope', '$element', function ($scope, $element) {
                                     })
                                 })
                             })
-                        })
+                        }) */
+
                     }
                     catch (err) {
+                        reject(err);
                     }
 
                 })
@@ -286,96 +288,62 @@ export default ['$scope', '$element', function ($scope, $element) {
         }
     }
 
-
-    function createNewMeasures(dimName, dimValue) {
-        return new Promise(function (resolve, reject) {
-            var measures = [];
-            var vizProp = $scope.vizProp;
-            try {
-                var promises = [];
-                // Loop through measures
-                for (var m = 0; m < vizProp.qHyperCubeDef.qMeasures.length; m++) {
-                    promises.push(createMeasure(vizProp, m, dimName, dimValue));
-                }
-                Promise.all(promises).then(function (measures) {
-                    resolve(measures)
-                })
-            }
-            catch (err) {
-                reject(err);
-            }
-        })
-    }
-
-    function createMeasure(vizProp, m, dimName, dimValue) {
+    function createMeasure(m, dimName, dimValue) {
         return new Promise(function (resolve, reject) {
             var aggr = ["Sum(", "Avg(", "Count(", "Min(", "Max("];
-            var formula = '';
-            var promises = [];
             var currentMes = '';
-            // Get Measure Definition from master item
-            if (vizProp.qHyperCubeDef.qMeasures[m].qLibraryId) {
-                var promise = getMasterMeasure(vizProp, m);
-                promises.push(promise);
-            }
-            else {
-                var promise = vizProp.qHyperCubeDef.qMeasures[m].qDef.qDef;
-                promises.push(promise);
-            }
-            Promise.all(promises).then(function (values) {
-                formula = values[0];
-                // Loop through all possible aggregation types
-                for (var i = 0; i < aggr.length; i++) {
-                    var form = ''
-                    if (i == 0) {
-                        form = formula;
-                    } else {
-                        form = currentMes;
-                    }
-                    var mes = '';
-                    var split = form.split(aggr[i]);
-                    // Check to see if form contains aggr
-                    if (split.length != 1) {
-                        // loop through split
-                        for (var s = 0; s < split.length; s++) {
-                            // check for set analysis in next
-                            var next = s + 1
-                            // ensure not last item
-                            if (typeof split[next] != 'undefined') {
-                                // check if includes < and inject partial set
-                                if (split[next].includes('{<')) {
-                                    mes += split[s] + aggr[i] + "$(vDimSet)";
-                                }
-                                // else inject full set
-                                else {
-                                    mes += split[s] + aggr[i] + "$(vDimSetFull)";
-                                }
+            var formula = m;
+            // Loop through all possible aggregation types
+            for (var i = 0; i < aggr.length; i++) {
+                var form = ''
+                if (i == 0) {
+                    form = formula;
+                } else {
+                    form = currentMes;
+                }
+                var mes = '';
+                var split = form.split(aggr[i]);
+                // Check to see if form contains aggr
+                if (split.length != 1) {
+                    // loop through split
+                    for (var s = 0; s < split.length; s++) {
+                        // check for set analysis in next
+                        var next = s + 1
+                        // ensure not last item
+                        if (typeof split[next] != 'undefined') {
+                            // check if includes < and inject partial set
+                            if (split[next].includes('{<')) {
+                                mes += split[s] + aggr[i] + "$(vDimSet)";
                             }
-                            // Last item
+                            // else inject full set
                             else {
-                                mes += split[s];
+                                mes += split[s] + aggr[i] + "$(vDimSetFull)";
                             }
                         }
-                        currentMes = mes;
-                    } else {
-                        currentMes = form;
+                        // Last item
+                        else {
+                            mes += split[s];
+                        }
                     }
+                    currentMes = mes;
+                } else {
+                    currentMes = form;
                 }
-                if (parseInt($scope.layout.prop.showAllDims) == 1) {
-                    currentMes += " + 0*Sum({1}1)";
-                }
-                currentMes = currentMes.replaceAll('$(vDimSetFull)', "{<" + `${dimName}={'${dimValue}'}` + ">}");
-                currentMes = currentMes.replaceAll('$(vDimSet)', `,${dimName}={'${dimValue}'}`);
-                currentMes = currentMes.replaceAll('$(vDim)', `'${dimValue}'`);
-                resolve(currentMes);
-            })
+            }
+            if ($scope.layout.prop.showAllDims) {
+                currentMes += " + 0*Sum({1}1)";
+            }
+            currentMes = currentMes.replaceAll('$(vDimSetFull)', "{<" + `${dimName}={'${dimValue}'}` + ">}");
+            currentMes = currentMes.replaceAll('$(vDimSet)', `,${dimName}={'${dimValue}'}`);
+            currentMes = currentMes.replaceAll('$(vDim)', `'${dimValue}'`);
+            resolve(currentMes);
         })
     }
 
-    function getMasterMeasure(vizProp, m) {
+    function getMasterMeasure(masterItemIdPath, m) {
         return new Promise(function (resolve, reject) {
             try {
-                enigma.app.getMeasure(vizProp.qHyperCubeDef.qMeasures[m].qLibraryId).then(function (mesObject) {
+                enigma.app.getMeasure(masterItemIdPath).then(function (mesObject) {
                     mesObject.getMeasure().then(function (mes) {
                         resolve(mes.qDef);
                     })
@@ -387,23 +355,198 @@ export default ['$scope', '$element', function ($scope, $element) {
         })
     }
 
-    function createChart(qType, cell, measures, dimName, dimValue, i) {
+    /* function getAndSetMeasures(vizProp, dimName, dimValue, paths) {
+        var masterItemIdPath = paths.masterItemIdPath;
+        var masterItemCheck = paths.masterItemCheck;
+        var measurePath = paths.measurePath;
+        var measureDefPath = paths.measureDefPath;
+        var loop = paths.secondLoop;
+        var measurePath2 = paths.measurePath2;
+        var vizProp = JSON.parse(JSON.stringify(vizProp));
         return new Promise(function (resolve, reject) {
             try {
-                var props = JSON.parse(JSON.stringify($scope.vizProp));
-                if (!$scope.layout.prop.advanced) {
-                    if (typeof measures != 'undefined') {
+                if (eval('vizProp.' + measurePath + '.length') > 0) {
+                    // Loop through measures
+                    var promises = [];
+                    for (var m = 0; m < eval('vizProp.' + measurePath + '.length'); m++) {
+                        if (loop) {
+                            for (var secondLoop = 0; secondLoop < eval('vizProp.' + measurePath2 + '.length'); secondLoop++) {
+                                try {
+                                    // Get Measure Definition from master item
+                                    if (eval("vizProp." + masterItemCheck)) {
+                                        var promise = getMasterMeasure(eval('vizProp.' + masterItemIdPath));
+                                        promises.push(promise);
+                                    }
+                                    // Otherwise get the def from hypercube
+                                    else {
+                                        var promise = eval('vizProp.' + measureDefPath);
+                                        promises.push(promise);
+                                    }
+                                }
+                                catch (err) {
+                                    promises.push("no action");
+                                }
+                            }
+                        }
+                        else {
+                            try {
+                                // Get Measure Definition from master item
+                                if (eval("vizProp." + masterItemCheck)) {
+                                    var promise = getMasterMeasure(eval('vizProp.' + masterItemIdPath));
+                                    promises.push(promise);
+                                }
+                                // Otherwise get the def from hypercube
+                                else {
+                                    var promise = eval('vizProp.' + measureDefPath);
+                                    promises.push(promise);
+                                }
+                            }
+                            catch (err) {
+                                promises.push("no action");
+                            }
+                        }
+
+
+                    }
+                    // All measures received from promises
+                    Promise.all(promises).then(function (measures) {
+                        // Create modifed measures
+                        var mesPromises = [];
                         for (var m = 0; m < measures.length; m++) {
-                            props.qHyperCubeDef.qMeasures[m].qLibraryId = "";
-                            props.qHyperCubeDef.qMeasures[m].qDef.qDef = measures[m];
+                            if (measures[m] != 'no action') {
+                                var mesPromise = createMeasure(measures[m], dimName, dimValue)
+                                mesPromises.push(mesPromise);
+                            }
+                            else {
+                                mesPromises.push(measures[m]);
+                            }
+
+                        }
+                        // Set measures within props
+                        Promise.all(mesPromises).then(function (measures) {
+                            for (var m = 0; m < eval('vizProp.' + measurePath + '.length'); m++) {
+                                if (measures[m] != 'no action') {
+                                    eval('vizProp.' + masterItemIdPath + " = '';");
+                                    eval('vizProp.' + measureDefPath + " = measures[m];");
+                                }
+                            }
+                            resolve(vizProp);
+                        })
+                    })
+                }
+                else {
+                    resolve(vizProp);
+                }
+            }
+            catch (err) {
+                reject(err);
+            }
+        })
+    } */
+
+    async function getAndSetMeasures(vizProp, dimName, dimValue, paths) {
+        try {
+            var prop = JSON.parse(JSON.stringify(vizProp));
+            // Loop through paths
+            for (var p = 0; p < paths.length; p++) {
+                // Check if first path exists
+                if (eval('typeof ' + 'prop.' + paths[p].path1 + ' != "undefined"')) {
+                    // Loop through first path
+                    for (var path1 = 0; path1 < eval('prop.' + paths[p].path1 + '.length'); path1++) {
+                        // check for multiple loops
+                        if (paths[p].loopsCount == 1) {
+                            // is lib item 
+                            if (eval('prop.' + paths[p].libCheck)) {
+                                // get lib item
+                                var measure = await getMasterMeasure(eval('prop.' + paths[p].libDef));
+                                // get modified measure
+                                var modMeasure = await (createMeasure(measure, dimName, dimValue));
+                                // set modified measure
+                                eval('prop.' + paths[p].libDefMes);
+                                eval('prop.' + paths[p].def + ' = ' + '"' + modMeasure + '"');
+                                console.log(prop);
+                            }
+                            // is not lib item
+                            else {
+                                // get measure
+                                var measure = eval('prop.' + paths[p].def);
+                                // get modified measure
+                                var modMeasure = await (createMeasure(measure, dimName, dimValue));
+                                // set modified measure
+                                eval('prop.' + paths[p].libDefMes);
+                                eval('prop.' + paths[p].def + ' = ' + '"' + modMeasure + '"');
+                                console.log(prop);
+                            }
+                        }
+                        // Multiple loops
+                        else {
+                            // Check if path 2 exists
+                            if (eval('typeof ' + 'prop.' + paths[p].path2 + '!= "undefined"')) {
+                                // Loop through number of loops
+                                for (var path2 = 0; path2 < eval('prop.' + paths[p].path2 + '.length'); path2++) {
+                                    // Check if lib item
+                                    if (eval('prop.' + paths[p].libCheck)) {
+                                        // get lib item
+                                        var measure = await getMasterMeasure(eval(paths[p].libDef));
+                                        // get modified measure
+                                        var modMeasure = await (createMeasure(measure, dimName, dimValue));
+                                        // set modified measure
+                                        eval('prop.' + paths[p].libDef + ' = ' + paths[p].libDefMes);
+                                        eval('prop.' + paths[p].def + ' = ' + '"' + modMeasure + '"');
+                                    }
+                                    // Normal measure
+                                    else {
+                                        // get measure
+                                        var measure = eval('prop.' + paths[p].def);
+                                        // get modified measure
+                                        var modMeasure = await (createMeasure(measure, dimName, dimValue));
+                                        // set modified measure
+                                        eval('prop.' + paths[p].libDef + ' = ' + paths[p].libDefMes);
+                                        eval('prop.' + paths[p].def + ' = ' + '"' + modMeasure + '"');
+                                    }
+                                }
+                            }
                         }
                     }
+                }
+            }
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+
+    function checkNested(obj /*, level1, level2, ... levelN*/) {
+        var args = Array.prototype.slice.call(arguments, 1);
+
+        for (var i = 0; i < args.length; i++) {
+            if (!obj || !obj.hasOwnProperty(args[i])) {
+                return false;
+            }
+            obj = obj[args[i]];
+        }
+        return true;
+    }
+
+    var test = { level1: { level2: { level3: 'level3' } } };
+
+    checkNested(test, 'level1', 'level2', 'level3'); // true
+    checkNested(test, 'level1', 'level2', 'foo'); // false
+
+
+    function createChart(vizProp, dimName, dimValue, i) {
+        var props = JSON.parse(JSON.stringify(vizProp));
+        return new Promise(function (resolve, reject) {
+            try {
+                if (!$scope.layout.prop.advanced) {
+                    props.showTitle = true;
                     props.title = dimValue;
                 }
                 else {
-                    props = JSON.stringify(props);
-                    props = props.replaceAll('$(vDimSetFull)', "{<" + `${dimName}={'${dimValue}'}` + ">}");
-                    props = props.replaceAll('$(vDimSet)', `,${dimName}={'${dimValue}'}`);
+
+                    props = JSON.stringify($scope.vizProp);
+                    props = props.replaceAll('$(vDimSetFull)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
+                    props = props.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}`);
                     props = props.replaceAll('$(vDim)', `'${dimName}'`);
                     props = props.replaceAll('$(vDimValue)', `'${dimValue}'`);
                     props = JSON.parse(props);
@@ -530,9 +673,10 @@ export default ['$scope', '$element', function ($scope, $element) {
                     }
                 }
 
-                app.visualization.create(qType, null, props).then(function (vis) {
+                app.visualization.create(props.visualization, null, props).then(function (vis) {
                     var viz = vis;
-                    vis.show(cell).then(function (test) {
+                    var qwikCells = $element[0].querySelectorAll('.qwik-trellis-cell');
+                    vis.show(qwikCells[i]).then(function (test) {
                         resolve(viz);
                     });
                 })
