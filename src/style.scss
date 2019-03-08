@@ -8,6 +8,9 @@
   right: 0;
   bottom: 0;
   z-index: 1000; /* Specify a stack order in case you're using a different order for other elements */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .qwik-trellis-flex-grid {

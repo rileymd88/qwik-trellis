@@ -85,6 +85,14 @@ define([], function () {
         defaultValue: "4"
     };
 
+    var maxCharts = {
+        ref: "prop.maxCharts",
+        label: "Maximum number of Charts",
+        type: "string",
+        expression: "optional",
+        defaultValue: "8"
+    };
+
     var advanced = {
         ref: "prop.advanced",
         label: "Advanced Mode",
@@ -134,6 +142,33 @@ define([], function () {
         ],
         defaultValue: true
     };
+
+    /* var autoTitle = {
+        ref: "prop.autoTitle",
+        label: "Title",
+        component: 'switch',
+        type: "boolean",
+        options: [{
+            value: false,
+            label: "Custom"
+        }, {
+            value: true,
+            label: "Auto"
+        }
+        ],
+        defaultValue: true
+    };
+
+    var customTitle = {
+        ref: "prop.customTitle",
+        label: "Custom HTML Title",
+        type: "string",
+        expression: "optional",
+        defaultValue: "'<div><b>vDim: vDimValue</b></div>'",
+        show: function (d) {
+            return !d.prop.autoTitle;
+        }
+    }; */
 
     var advancedMsg1 = {
         type: "string",
@@ -192,10 +227,13 @@ define([], function () {
                 items: {
                     link: link,
                     col: colNum,
+                    maxCharts: maxCharts,
                     label: label,
                     labelMes: labelMes,
                     showAllDimensionValues: showAllDimensionValues,
                     autoRange: autoRange,
+/*                     autoTitle: autoTitle,
+                    customTitle: customTitle, */
                     advanced: advanced,
                     advancedMsg1: advancedMsg1,
                     advancedMsg2: advancedMsg2,

@@ -11,6 +11,11 @@ export default window.define(['qlik'], function(qlik) {
     template: template,
     definition: definition,
     controller: controller,
-    paint: paint
+    paint: paint,
+    support: {
+      snapshot: true, //snapshot - include in story
+      export: true,   //export to PDF, PowerPoint and image
+      exportData: true //export data to excel 
+    }
   }
 })
