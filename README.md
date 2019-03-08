@@ -10,6 +10,12 @@ Qwik Trellis is a Qlik Sense extension which allows you to create a trellis char
 
 Only developers need to use webpack
 
+## Release Notes v0.5
+* Added limit to number of charts which can be created
+* Added support for objects which are not measure based
+* Issue with Qlik Sense Desktop Client fixed
+* Usability improvements
+
 ## Release Notes v0.4
 * Ability to sort trellis charts using standard qlik sorting properties
 * IE11 Support added
