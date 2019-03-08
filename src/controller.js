@@ -11,7 +11,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     })
     $scope.$watch("layout.prop.columns", function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.colNum = parseInt($scope.layout.prop.columns);
+            /* $scope.colNum = parseInt($scope.layout.prop.columns);
             if ($scope.currentCube) {
                 if ($scope.currentCube.length < $scope.colNum) {
                     $scope.colNum = $scope.currentCube.length - 1;
@@ -23,8 +23,10 @@ export default ['$scope', '$element', function ($scope, $element) {
             rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px.toString() + 'px)';
             $scope.rowHeight = {
                 "height": rowPercent
-            };
-            createTrellisObjects();
+            }; */
+            setupStyles().then(function () {
+                createTrellisObjects();
+            })
         }
     });
 
@@ -59,7 +61,6 @@ export default ['$scope', '$element', function ($scope, $element) {
             $scope.masterVizs = await getMasterItems();
             console.log($scope.masterVizs);
         }
-
         if (newValue !== oldValue) {
             try {
                 // Create hypercube
@@ -109,6 +110,12 @@ export default ['$scope', '$element', function ($scope, $element) {
     });
 
     $scope.$watch("layout.prop.advanced", function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            createTrellisObjects();
+        }
+    });
+
+    $scope.$watch("layout.prop.maxCharts", function (newValue, oldValue) {
         if (newValue !== oldValue) {
             createTrellisObjects();
         }
