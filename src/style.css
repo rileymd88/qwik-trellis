@@ -27,6 +27,8 @@
   align-items: center;
 }
 
+
+
 .qt-custom-title {
   background-color: gray;
   flex: 1;
@@ -47,3 +49,37 @@
   .qv-object-qwik-trellis .qv-inner-object {
     overflow:visible;
   }
+
+  .qwik-trellis-slide {
+    height: 100%;
+    width: 85%;
+    margin: auto;
+  }
+  
+  .qwik-trellis-slide-container {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Next & previous buttons */
+.qwik-trellis-prev, .qwik-trellis-next {
+    position: absolute;
+    top: 40%;
+    width: auto;
+    padding: 16px;
+    color: #C2C2C2;
+    z-index: 1200;
+}
+
+.qwik-trellis-prev:hover,.qwik-trellis-next:hover  { 
+  background-color:#D9D9D9;
+}
+
+/* Position the "next button" to the right */
+.qwik-trellis-next {
+  right: 0;
+}
+
+.qwik-trellis-prev {
+  left: 0;
+}

@@ -93,6 +93,22 @@ define([], function () {
         defaultValue: "8"
     };
 
+    var slideMode = {
+        ref: "prop.slideMode",
+        label: "Slide Mode",
+        component: 'switch',
+        type: "boolean",
+        options: [{
+            value: false,
+            label: "Off"
+        }, {
+            value: true,
+            label: "On"
+        }
+        ],
+        defaultValue: false
+    }
+
     var advanced = {
         ref: "prop.advanced",
         label: "Advanced Mode",
@@ -232,6 +248,7 @@ define([], function () {
                     labelMes: labelMes,
                     showAllDimensionValues: showAllDimensionValues,
                     autoRange: autoRange,
+                    slideMode: slideMode,
 /*                     autoTitle: autoTitle,
                     customTitle: customTitle, */
                     advanced: advanced,

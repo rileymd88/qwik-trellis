@@ -8,22 +8,37 @@ export default ['$scope', '$element', function ($scope, $element) {
     $scope.sessionIds = [];
     setupStyles().then(function () {
         createTrellisObjects();
-    })
+    })    
+        if (window.innerWidth < 650) {
+                $scope.mobileMode = true;
+        }
+        else {
+                $scope.mobileMode = false;
+        }
+
+        $scope.layout.getScope = function() {
+            return $scope;
+        }
+
+
     $scope.$watch("layout.prop.columns", function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            /* $scope.colNum = parseInt($scope.layout.prop.columns);
-            if ($scope.currentCube) {
-                if ($scope.currentCube.length < $scope.colNum) {
-                    $scope.colNum = $scope.currentCube.length - 1;
-                }
-            }
-            $scope.rowNum = Math.ceil($scope.currentCube.qDataPages[0].qMatrix.length / $scope.colNum);
-            var rowPercent = 100 / $scope.rowNum;
-            var px = $scope.rowNum + 1;
-            rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px.toString() + 'px)';
-            $scope.rowHeight = {
-                "height": rowPercent
-            }; */
+            setupStyles().then(function () {
+                createTrellisObjects();
+            })
+        }
+    });
+
+    $scope.$watch("mobileMode", function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+            setupStyles().then(function () {
+                createTrellisObjects();
+            })
+        }
+    });
+
+    $scope.$watch("layout.prop.slideMode", function (newValue, oldValue) {
+        if (newValue !== oldValue) {
             setupStyles().then(function () {
                 createTrellisObjects();
             })
@@ -164,6 +179,20 @@ export default ['$scope', '$element', function ($scope, $element) {
         })
     }
 
+    $scope.prevSlide = function () {
+        $scope.$watch(function () {
+            $scope.slideIndex = $scope.slideIndex - 1;
+        })
+        qlik.resize();
+    }
+
+    $scope.nextSlide = function () {
+        $scope.$watch(function () {
+            $scope.slideIndex = $scope.slideIndex + 1;
+        })
+        qlik.resize();
+    }
+
     function getCube(dimDef) {
         return new Promise(function (resolve, reject) {
             try {
@@ -203,11 +232,11 @@ export default ['$scope', '$element', function ($scope, $element) {
                                     $scope.errorMsg = "Too many dimension values!";
                                     $scope.showCharts = false;
                                 })
-                                if($scope.sessionIds.length > 0 && enigma && enigma.app) {
+                                if ($scope.sessionIds.length > 0 && enigma && enigma.app) {
                                     for (var i = 0; i < $scope.sessionIds.length; i++) {
                                         enigma.app.destroySessionObject($scope.sessionIds[i]);
                                     }
-                                } 
+                                }
                                 reject("Too many dimension values!");
                             }
                             else {
@@ -286,7 +315,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                                     $scope.maxValues = [];
                                     for (var v = 0; v < viz.length; v++) {
                                         $scope.sessionIds.push(viz[v].id);
-                                        
+
                                         for (var m = 0; m < viz[v].model.layout.qHyperCube.qMeasureInfo.length; m++) {
                                             $scope.maxValues.push(viz[v].model.layout.qHyperCube.qMeasureInfo[m].qMax);
                                         }
@@ -321,23 +350,23 @@ export default ['$scope', '$element', function ($scope, $element) {
                                                 }
                                             }
                                             Promise.all(setPropPromises).then(function () {
-                                                $scope.$watch(function(){
+                                                $scope.$watch(function () {
                                                     $scope.showCharts = true;
                                                     $scope.showError = false;
+                                                    $scope.slideIndex = 0;
                                                 })
                                                 qlik.resize();
-                                                console.log($scope.sessionIds);
                                             })
                                         })
                                     })
                                 }
                                 else {
-                                    $scope.$watch(function(){
+                                    $scope.$watch(function () {
                                         $scope.showCharts = true;
                                         $scope.showError = false;
+                                        $scope.slideIndex = 0;
                                     })
                                     qlik.resize();
-                                    console.log($scope.sessionIds);
                                 }
                             })
                         })
@@ -672,8 +701,15 @@ export default ['$scope', '$element', function ($scope, $element) {
 
                 app.visualization.create(props.visualization, null, props).then(function (vis) {
                     var viz = vis;
-                    var qwikCells = $('.qwik-trellis-cell');
+                    if (!$scope.layout.prop.slideMode && !$scope.mobileMode) {
+                        var qwikCells = $('.qwik-trellis-cell');
+                    }
+                    else {
+                        var qwikCells = $('.qwik-trellis-slide');
+                    }
+
                     vis.show(qwikCells[i]).then(function (test) {
+
                         /* if ($scope.layout.prop.customTitle) {   
                             var customTitle = $scope.layout.prop.customTitle.replaceAll('vDim', dimName);
                             customTitle = customTitle.replaceAll('vDimValue', dimValue);

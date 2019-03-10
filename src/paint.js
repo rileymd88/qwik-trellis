@@ -1,6 +1,6 @@
 var qlik = window.require('qlik');
 
-export default function ($element, layout) {
+export default async function ($element, layout) {
     var x = document.getElementById("qtOverlay");
     if (qlik.navigation.getMode() == 'edit') {
         x.style.display = "block";

@@ -1,14 +1,20 @@
 <div id="qtOverlay">
     <span ng-show="showMasterVizSelect && !showError" class="lui-icon lui-icon--object" aria-hidden="true"></span>
     <span ng-show="showMasterVizSelect && !showError" style="white-space: pre-line">Add Master Visualization</span>
-    <select ng-show="showMasterVizSelect && !showError" class="lui-select  lui-select--large" ng-change="onMasterVizSelected(masterViz)" ng-model="masterViz">
-        <option  ng-repeat="masterViz in masterVizs" value="{{masterViz.qInfo.qId}}">{{masterViz.qMeta.title}}</option>
+    <select ng-show="showMasterVizSelect && !showError" class="lui-select  lui-select--large"
+        ng-change="onMasterVizSelected(masterViz)" ng-model="masterViz">
+        <option ng-repeat="masterViz in masterVizs" value="{{masterViz.qInfo.qId}}">{{masterViz.qMeta.title}}</option>
     </select>
 </div>
 <div ng-show="showError" class="qwik-trellis-error">
     {{errorMsg}}
 </div>
-<div ng-repeat="r in [].constructor(rowNum) track by $index" id="qwik-trellis-grid-{{layoutId}}" ng-style="rowHeight"
-    ng-show="showCharts" class="qwik-trellis-flex-grid">
+<div ng-if="!layout.prop.slideMode && !mobileMode" ng-repeat="r in [].constructor(rowNum) track by $index"
+    id="qwik-trellis-grid-{{layoutId}}" ng-style="rowHeight" ng-show="showCharts" class="qwik-trellis-flex-grid">
     <div ng-repeat="c in [].constructor(colNum) track by $index" class="qwik-trellis-cell"></div>
+</div>
+<div ng-if="layout.prop.slideMode || mobileMode" ng-swipe-left="nextSlide()" ng-swipe-right="prevSlide()" class="qwik-trellis-slide-container">
+    <div ng-show="$index == slideIndex" ng-repeat="s in [].constructor(currentCube.length) track by $index" class="qwik-trellis-slide"></div>
+    <span ng-show="slideIndex != 0 && showCharts" class="lui-icon  lui-icon--large lui-icon--arrow-left qwik-trellis-prev" aria-hidden="true" ng-click="prevSlide()"></span>
+    <span ng-show="slideIndex + 1 != currentCube.length && showCharts" class="lui-icon  lui-icon--large lui-icon--arrow-right qwik-trellis-next" aria-hidden="true" ng-click="nextSlide()"></span>
 </div>
