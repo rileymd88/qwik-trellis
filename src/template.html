@@ -17,4 +17,7 @@
     <div ng-show="$index == slideIndex" ng-repeat="s in [].constructor(currentCube.length) track by $index" class="qwik-trellis-slide"></div>
     <span ng-show="slideIndex != 0 && showCharts" class="lui-icon  lui-icon--large lui-icon--arrow-left qwik-trellis-prev" aria-hidden="true" ng-click="prevSlide()"></span>
     <span ng-show="slideIndex + 1 != currentCube.length && showCharts" class="lui-icon  lui-icon--large lui-icon--arrow-right qwik-trellis-next" aria-hidden="true" ng-click="nextSlide()"></span>
+    <div ng-show="showCharts" style="text-align:center">
+        <span class="qwik-trellis-dot" ng-repeat="s in [].constructor(currentCube.length) track by $index" ng-click="dotClick($index)"></span>
+    </div>
 </div>

@@ -51,7 +51,7 @@
   }
 
   .qwik-trellis-slide {
-    height: 100%;
+    height: 90%;
     width: 85%;
     margin: auto;
   }
@@ -82,4 +82,18 @@
 
 .qwik-trellis-prev {
   left: 0;
+}
+
+.qwik-trellis-dot {
+  height: 10px;
+  width: 10px;
+  margin: 0 2px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.6s ease;
+}
+
+.qwik-trellis-active, .qwik-trellis-dot:hover {
+  background-color: #717171;
 }

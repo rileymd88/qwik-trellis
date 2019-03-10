@@ -8,17 +8,17 @@ export default ['$scope', '$element', function ($scope, $element) {
     $scope.sessionIds = [];
     setupStyles().then(function () {
         createTrellisObjects();
-    })    
-        if (window.innerWidth < 650) {
-                $scope.mobileMode = true;
-        }
-        else {
-                $scope.mobileMode = false;
-        }
+    })
+    if (window.innerWidth < 650) {
+        $scope.mobileMode = true;
+    }
+    else {
+        $scope.mobileMode = false;
+    }
 
-        $scope.layout.getScope = function() {
-            return $scope;
-        }
+    $scope.layout.getScope = function () {
+        return $scope;
+    }
 
 
     $scope.$watch("layout.prop.columns", function (newValue, oldValue) {
@@ -182,6 +182,15 @@ export default ['$scope', '$element', function ($scope, $element) {
     $scope.prevSlide = function () {
         $scope.$watch(function () {
             $scope.slideIndex = $scope.slideIndex - 1;
+            var dots = $(".qwik-trellis-dot");
+            for (var i = 0; i < dots.length; i++) {
+                if ($scope.slideIndex == i) {
+                    $(dots[i]).addClass("qwik-trellis-active");
+                }
+                else {
+                    $(dots[i]).removeClass("qwik-trellis-active");
+                }
+            }
         })
         qlik.resize();
     }
@@ -189,6 +198,33 @@ export default ['$scope', '$element', function ($scope, $element) {
     $scope.nextSlide = function () {
         $scope.$watch(function () {
             $scope.slideIndex = $scope.slideIndex + 1;
+            var dots = $(".qwik-trellis-dot");
+            for (var i = 0; i < dots.length; i++) {
+                if ($scope.slideIndex == i) {
+                    $(dots[i]).addClass("qwik-trellis-active");
+                }
+                else {
+                    $(dots[i]).removeClass("qwik-trellis-active");
+                }
+            }
+        })
+        qlik.resize();
+    }
+
+    $scope.dotClick = function (index) {
+        var dots = $(".qwik-trellis-dot");
+        for (var i = 0; i < dots.length; i++) {
+            console.log(index, i);
+            if (index == i) {
+                console.log('yes');
+                $(dots[i]).addClass("qwik-trellis-active");
+            }
+            else {
+                $(dots[i]).removeClass("qwik-trellis-active");
+            }
+        }
+        $scope.$watch(function () {
+            $scope.slideIndex = index;
         })
         qlik.resize();
     }
@@ -350,6 +386,8 @@ export default ['$scope', '$element', function ($scope, $element) {
                                                 }
                                             }
                                             Promise.all(setPropPromises).then(function () {
+                                                var dots = $(".qwik-trellis-dot");
+                                                $(dots[0]).addClass("qwik-trellis-active");
                                                 $scope.$watch(function () {
                                                     $scope.showCharts = true;
                                                     $scope.showError = false;
@@ -361,6 +399,8 @@ export default ['$scope', '$element', function ($scope, $element) {
                                     })
                                 }
                                 else {
+                                    var dots = $(".qwik-trellis-dot");
+                                    $(dots[0]).addClass("qwik-trellis-active");
                                     $scope.$watch(function () {
                                         $scope.showCharts = true;
                                         $scope.showError = false;
