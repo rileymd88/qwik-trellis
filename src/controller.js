@@ -211,24 +211,6 @@ export default ['$scope', '$element', function ($scope, $element) {
         qlik.resize();
     }
 
-    $scope.dotClick = function (index) {
-        var dots = $(".qwik-trellis-dot");
-        for (var i = 0; i < dots.length; i++) {
-            console.log(index, i);
-            if (index == i) {
-                console.log('yes');
-                $(dots[i]).addClass("qwik-trellis-active");
-            }
-            else {
-                $(dots[i]).removeClass("qwik-trellis-active");
-            }
-        }
-        $scope.$watch(function () {
-            $scope.slideIndex = index;
-        })
-        qlik.resize();
-    }
-
     function getCube(dimDef) {
         return new Promise(function (resolve, reject) {
             try {
