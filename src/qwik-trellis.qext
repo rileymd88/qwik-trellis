@@ -2,6 +2,6 @@
   "name": "Qwik Trellis",
   "description": "Qwik Trellis is a Qlik Sense extension which allows you to create a trellis chart object based on an existing master vizulisation",
   "type": "visualization",
-  "version": "0.5",
+  "version": "0.6",
   "author": "Riley MacDonald"
 }
