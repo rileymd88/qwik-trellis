@@ -13,7 +13,7 @@ export default {
     this.$scope.isInEdit = this.options.interactionState == 2;
   },
   support: {
-    snapshot: true,
+    snapshot: false,
     export: true,
     exportData: true
   }

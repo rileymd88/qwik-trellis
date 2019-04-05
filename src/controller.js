@@ -2,7 +2,7 @@ var qlik = window.require('qlik');
 import chartTypes from './chartTypes.js';
 import $ from 'jquery';
 
-export default ['$scope', function ($scope) {
+export default ['$scope', '$element', function ($scope, $element) {
   $scope.layoutId = $scope.layout.qInfo.qId;
   var enigma = $scope.component.model.enigmaModel;
   var app = qlik.currApp($scope);
@@ -173,7 +173,7 @@ export default ['$scope', function ($scope) {
   $scope.prevSlide = function () {
     $scope.$watch(function () {
       $scope.slideIndex = $scope.slideIndex - 1;
-      var dots = $(".qlik-trellis-dot");
+      var dots = $element.find(".qlik-trellis-dot");
       for (var i = 0; i < dots.length; i++) {
         if ($scope.slideIndex == i) {
           $(dots[i]).addClass("qlik-trellis-active");
@@ -189,7 +189,7 @@ export default ['$scope', function ($scope) {
   $scope.nextSlide = function () {
     $scope.$watch(function () {
       $scope.slideIndex = $scope.slideIndex + 1;
-      var dots = $(".qlik-trellis-dot");
+      var dots = $element.find(".qlik-trellis-dot");
       for (var i = 0; i < dots.length; i++) {
         if ($scope.slideIndex == i) {
           $(dots[i]).addClass("qlik-trellis-active");
@@ -265,6 +265,7 @@ export default ['$scope', function ($scope) {
   }
 
   async function createTrellisObjects() {
+
     // Get viz object
     if ($scope.currentCube) {
       if ($scope.currentCube.length < $scope.colNum) {
@@ -349,7 +350,7 @@ export default ['$scope', function ($scope) {
                     }
 
                     return Promise.all(setPropPromises).then(function () {
-                      var dots = $(".qlik-trellis-dot");
+                      var dots = $element.find(".qlik-trellis-dot");
                       $(dots[0]).addClass("qlik-trellis-active");
                       $scope.$watch(function () {
                         $scope.showCharts = true;
@@ -363,7 +364,7 @@ export default ['$scope', function ($scope) {
                 });
               }
               else {
-                var dots = $(".qlik-trellis-dot");
+                var dots = $element.find(".qlik-trellis-dot");
                 $(dots[0]).addClass("qlik-trellis-active");
                 $scope.$watch(function () {
                   $scope.showCharts = true;
@@ -713,7 +714,7 @@ export default ['$scope', function ($scope) {
 
   function showCharts(viz) {
     var qwikCells = $scope.layout.prop.slideMode || $scope.mobileMode
-      ? $('.qlik-trellis-slide') : $('.qlik-trellis-cell');
+      ? $element.find('.qlik-trellis-slide') : $element.find('.qlik-trellis-cell');
     var tasks = [];
     for (let i = 0; i < viz.length; i++) {
       tasks.push(viz[i].show(qwikCells[i]));
