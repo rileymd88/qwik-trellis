@@ -37,10 +37,18 @@ define([], function () {
     }
   };
 
-  var data = {
-    uses: "data",
+  var dimensions = {
+    uses:"dimensions",    
     min: 1,
-    max: 1
+    max: 1,
+  };
+ 
+  var data = {
+    translation: "Common.Data",		
+    type: "items",
+    items: {
+      dimensions: dimensions
+    }
   };
 
   var sorting = {
