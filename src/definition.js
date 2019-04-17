@@ -261,7 +261,7 @@ define([], function () {
       },
       paragraph1: {
         label: `Qwik Trellis is a Qlik Sense extension which allows you to create a trellis
-          chart object based on an existing master vizulisation.`,
+          chart object based on an existing master visualization.`,
         component: 'text'
       },
       paragraph2: {
