@@ -38,9 +38,17 @@ define([], function () {
   };
 
   var dimensions = {
-    uses: "dimensions",
+    uses:"dimensions",    
     min: 1,
-    max: 1
+    max: 1,
+  };
+ 
+  var data = {
+    translation: "Common.Data",		
+    type: "items",
+    items: {
+      dimensions: dimensions
+    }
   };
 
   var sorting = {
@@ -217,7 +225,7 @@ define([], function () {
 
   var linkSection = {
     component: "expandable-items",
-    label: "Options",
+    label: "Add-ons",
     items: {
       header1: {
         type: "items",
@@ -266,11 +274,11 @@ define([], function () {
   return {
     type: "items",
     component: "accordion",
-    items: {
-      appearance: appearance,
-      dimensions: dimensions,
+    items: {      
+      data: data,
       sorting: sorting,
       linkSection: linkSection,
+      appearance: appearance,
       about: aboutDefinition
     }
   };
