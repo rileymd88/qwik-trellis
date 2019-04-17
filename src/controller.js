@@ -96,11 +96,10 @@ export default ['$scope', '$element', function ($scope, $element) {
         };
       }
       catch (err) {
-        // Destroy existing session objects
+        // Destroy existing session objects        
         if ($scope.sessionIds.length) {
           for (var i = 0; i < $scope.sessionIds.length; i++) {
-            enigma.app.destroySessionObject($scope.sessionIds[i]).then(function (res) {
-            });
+            enigma.app.destroySessionObject($scope.sessionIds[i]);
           }
           $scope.showCharts = false;
         }
@@ -140,8 +139,7 @@ export default ['$scope', '$element', function ($scope, $element) {
         // Destroy existing session objects
         if ($scope.sessionIds.length) {
           for (var i = 0; i < $scope.sessionIds.length; i++) {
-            enigma.app.destroySessionObject($scope.sessionIds[i]).then(function (res) {
-            });
+            enigma.app.destroySessionObject($scope.sessionIds[i]);
           }
           $scope.showCharts = false;
         }
