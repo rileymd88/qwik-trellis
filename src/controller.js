@@ -96,11 +96,10 @@ export default ['$scope', '$element', function ($scope, $element) {
         };
       }
       catch (err) {
-        // Destroy existing session objects
+        // Destroy existing session objects        
         if ($scope.sessionIds.length) {
           for (var i = 0; i < $scope.sessionIds.length; i++) {
-            enigma.app.destroySessionObject($scope.sessionIds[i]).then(function (res) {
-            });
+            enigma.app.destroySessionObject($scope.sessionIds[i]);
           }
           $scope.showCharts = false;
         }
@@ -119,12 +118,32 @@ export default ['$scope', '$element', function ($scope, $element) {
       createTrellisObjects();
     }
   });
-
   $scope.$watch("layout.prop.maxCharts", function (newValue, oldValue) {
     if (newValue !== oldValue) {
       setupStyles().then(async function () {
         createTrellisObjects();
       });
+    }
+  });
+
+  $scope.$watch("layout.qHyperCube.qDataPages[0].qMatrix[0][0].qText", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      try {
+        // Create hypercube
+        getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
+          $scope.currentCube = cube;
+          createTrellisObjects();
+        });
+      }
+      catch (err) {
+        // Destroy existing session objects
+        if ($scope.sessionIds.length) {
+          for (var i = 0; i < $scope.sessionIds.length; i++) {
+            enigma.app.destroySessionObject($scope.sessionIds[i]);
+          }
+          $scope.showCharts = false;
+        }
+      }
     }
   });
 
@@ -265,7 +284,6 @@ export default ['$scope', '$element', function ($scope, $element) {
   }
 
   async function createTrellisObjects() {
-
     // Get viz object
     if ($scope.currentCube) {
       if ($scope.currentCube.length < $scope.colNum) {
