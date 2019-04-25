@@ -7,9 +7,6 @@ export default ['$scope', '$element', function ($scope, $element) {
   var enigma = $scope.component.model.enigmaModel;
   var app = qlik.currApp($scope);
   $scope.sessionIds = [];
-  setupStyles().then(function () {
-    createTrellisObjects();
-  });
   $scope.mobileMode = window.innerWidth < 650;
 
   $scope.layout.getScope = function () {
@@ -17,7 +14,7 @@ export default ['$scope', '$element', function ($scope, $element) {
   };
 
   $scope.$watch("layout.prop.columns", function (newValue, oldValue) {
-    if (newValue !== oldValue) {
+    if (newValue !== oldValue && isReadyToSetupStyles()) {
       setupStyles().then(function () {
         createTrellisObjects();
       });
@@ -25,7 +22,7 @@ export default ['$scope', '$element', function ($scope, $element) {
   });
 
   $scope.$watch("mobileMode", function (newValue, oldValue) {
-    if (newValue !== oldValue) {
+    if (newValue !== oldValue && isReadyToSetupStyles()) {
       setupStyles().then(function () {
         createTrellisObjects();
       });
@@ -33,20 +30,50 @@ export default ['$scope', '$element', function ($scope, $element) {
   });
 
   $scope.$watch("layout.prop.slideMode", function (newValue, oldValue) {
-    if (newValue !== oldValue) {
+    if (newValue !== oldValue && isReadyToSetupStyles()) {
       setupStyles().then(function () {
         createTrellisObjects();
       });
     }
   });
 
+  $scope.$watch("layout.prop.maxCharts", function (newValue, oldValue) {
+    if (newValue !== oldValue && isReadyToSetupStyles()) {
+      setupStyles().then(async function () {
+        createTrellisObjects();
+      });
+    }
+  });
+
   $scope.$watch("layout.qStateName", function (newValue, oldValue) {
-    if (newValue !== oldValue) {
+    if (newValue !== oldValue && isReadyToSetupStyles()) {
       setupStyles().then(function () {
         createTrellisObjects();
       });
     }
   });
+
+  $scope.$watch("sortCriterias", function (newValue, oldValue) {
+    if (JSON.stringify(newValue) !== JSON.stringify(oldValue) && isReadyToSetupStyles()) {
+      setupStyles().then(function () {
+        createTrellisObjects();
+      });
+    }
+  });
+
+  $scope.$watch("nullSuppression", function (newValue, oldValue) {
+    if (newValue !== oldValue && isReadyToSetupStyles()) {
+      setupStyles().then(function () {
+        createTrellisObjects();
+      });
+    }
+  });
+
+  function isReadyToSetupStyles() {
+    return typeof $scope.mobileMode !== 'undefined'
+      && typeof $scope.sortCriterias !== 'undefined'
+      && typeof $scope.nullSuppression !== 'undefined';
+  }
 
   function setupStyles() {
     return new Promise(function (resolve, reject) {
@@ -116,34 +143,6 @@ export default ['$scope', '$element', function ($scope, $element) {
   $scope.$watch("layout.prop.advanced", function (newValue, oldValue) {
     if (newValue !== oldValue) {
       createTrellisObjects();
-    }
-  });
-  $scope.$watch("layout.prop.maxCharts", function (newValue, oldValue) {
-    if (newValue !== oldValue) {
-      setupStyles().then(async function () {
-        createTrellisObjects();
-      });
-    }
-  });
-
-  $scope.$watch("layout.qHyperCube.qDataPages[0].qMatrix[0][0].qText", function (newValue, oldValue) {
-    if (newValue !== oldValue) {
-      try {
-        // Create hypercube
-        getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
-          $scope.currentCube = cube;
-          createTrellisObjects();
-        });
-      }
-      catch (err) {
-        // Destroy existing session objects
-        if ($scope.sessionIds.length) {
-          for (var i = 0; i < $scope.sessionIds.length; i++) {
-            enigma.app.destroySessionObject($scope.sessionIds[i]);
-          }
-          $scope.showCharts = false;
-        }
-      }
     }
   });
 
@@ -223,63 +222,48 @@ export default ['$scope', '$element', function ($scope, $element) {
 
   function getCube(dimDef) {
     return new Promise(function (resolve, reject) {
-      try {
-        enigma.app.getObject($scope.layoutId).then(function (object) {
-          object.getFullPropertyTree().then(function (properties) {
-            var extProps = JSON.parse(JSON.stringify(properties));
-            var qSortCriterias = extProps.qProperty.qHyperCubeDef.qDimensions[0].qDef.qSortCriterias;
-            var dimDefMes = dimDef.replace('=', '');
-            app.createCube({
-              "qDimensions": [{
-                "qDef": {
-                  "qFieldDefs": [dimDef],
-                  "qSortCriterias": qSortCriterias
-                }
-              }],
-              "qMeasures": [{
-                "qDef": {
-                  "qDef": `Count({1}${dimDefMes})`,
-                  "qLabel": "dim"
-                }
-              }],
-              "qSortCriterias": qSortCriterias,
-              "qInitialDataFetch": [{
-                qHeight: 50,
-                qWidth: 2
-              }]
-            }, function (reply) {
-              var cube = [];
-              var i;
-              for (i = 0; i < reply.qHyperCube.qDataPages[0].qMatrix.length; i++) {
-                if (reply.qHyperCube.qDataPages[0].qMatrix[i][0].qText != "-") {
-                  cube.push(reply.qHyperCube.qDataPages[0].qMatrix[i]);
-                }
-              }
-              if (cube.length > parseInt($scope.layout.prop.maxCharts)) {
-                $scope.$watch(function () {
-                  $scope.showError = true;
-                  $scope.errorMsg = "Too many dimension values!";
-                  $scope.showCharts = false;
-                });
-                if ($scope.sessionIds.length > 0 && enigma && enigma.app) {
-                  for (i = 0; i < $scope.sessionIds.length; i++) {
-                    enigma.app.destroySessionObject($scope.sessionIds[i]);
-                  }
-                }
-                throw Error("Too many dimension values!");
-              }
-              else {
-                resolve(cube);
-              }
-              resolve(cube);
-              enigma.app.destroySessionObject(reply.qInfo.qId);
-            });
+      var dimDefMes = dimDef.replace('=', '');
+      return app.createCube({
+        "qDimensions": [{
+          "qDef": {
+            "qFieldDefs": [dimDef],
+            "qSortCriterias": $scope.sortCriterias
+          },
+          "qNullSuppression": $scope.nullSuppression
+        }],
+        "qMeasures": [{
+          "qDef": {
+            "qDef": `Count({1}${dimDefMes})`,
+            "qLabel": "dim"
+          }
+        }],
+        "qSortCriterias": $scope.sortCriterias,
+        "qInitialDataFetch": [{
+          qHeight: 50,
+          qWidth: 2
+        }]
+      }, function (reply) {
+        var cube = [];
+        var i;
+        for (i = 0; i < reply.qHyperCube.qDataPages[0].qMatrix.length; i++) {
+          cube.push(reply.qHyperCube.qDataPages[0].qMatrix[i]);
+        }
+        if (cube.length > parseInt($scope.layout.prop.maxCharts)) {
+          $scope.$watch(function () {
+            $scope.showError = true;
+            $scope.errorMsg = "Too many dimension values!";
+            $scope.showCharts = false;
           });
-        });
-      }
-      catch (err) {
-        reject(err);
-      }
+          if ($scope.sessionIds.length > 0 && enigma && enigma.app) {
+            for (i = 0; i < $scope.sessionIds.length; i++) {
+              enigma.app.destroySessionObject($scope.sessionIds[i]);
+            }
+          }
+          throw Error("Too many dimension values!");
+        }
+        resolve(cube);
+        enigma.app.destroySessionObject(reply.qInfo.qId);
+      });
     });
   }
 
@@ -309,7 +293,7 @@ export default ['$scope', '$element', function ($scope, $element) {
             var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
             var dimValue = $scope.currentCube[q][0].qText;
             if ($scope.qtcProps) {
-              var promise = getAndSetMeasures($scope.vizProp, dimName, dimValue, $scope.qtcProps.paths);
+              var promise = getAndSetMeasures($scope.vizProp, dimName, dimValue, $scope.qtcProps);
               propPromises.push(promise);
             }
           }
@@ -473,7 +457,9 @@ export default ['$scope', '$element', function ($scope, $element) {
     });
   }
 
-  async function getAndSetMeasures(vizProp, dimName, dimValue, paths) {
+  async function getAndSetMeasures(vizProp, dimName, dimValue, chartTypeProps) {
+    const paths = chartTypeProps.paths;
+    const showAll = chartTypeProps.showAll;
     return new Promise(async function (resolve, reject) {
       var props = JSON.parse(JSON.stringify(vizProp)); // Copies the property-object
       try {
@@ -497,7 +483,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                   let measure = await getMasterMeasure(path.libDef.get(props, i));
                   // get modified measure
                   let modMeasure = await createMeasure(
-                    measure, dimName, dimValue, paths.showAll, $scope.qtcProps.type);
+                    measure, dimName, dimValue, showAll, $scope.qtcProps.type);
                   // set modified measure
                   path.libDefMes(props, i);
                   path.def.set(props, i, modMeasure);
@@ -508,7 +494,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                   let measure = path.def.get(props, i);
                   // get modified measure
                   let modMeasure = await createMeasure(
-                    measure, dimName, dimValue, paths.showAll, $scope.qtcProps.type);
+                    measure, dimName, dimValue, showAll, $scope.qtcProps.type);
                   // set modified measure
                   path.libDefMes(props, i);
                   path.def.set(props, i, modMeasure);
@@ -532,7 +518,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                       let measure = await getMasterMeasure(path.libDef.get(props, i, j));
                       // get modified measure
                       let modMeasure = await createMeasure(
-                        measure, dimName, dimValue, paths.showAll, $scope.qtcProps.type);
+                        measure, dimName, dimValue, showAll, $scope.qtcProps.type);
                       // set modified measure
                       path.libDef.set(props, i, j, path.libDefMes(props, i, j));
                       path.def.set(props, i, j, modMeasure);
@@ -543,7 +529,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                       let measure = path.def.get(props, i, j);
                       // get modified measure
                       let modMeasure = await createMeasure(
-                        measure, dimName, dimValue, paths.showAll, $scope.qtcProps.type);
+                        measure, dimName, dimValue, showAll, $scope.qtcProps.type);
                       // set modified measure
                       path.libDef.set(props, i, j, path.libDefMes(props, i, j));
                       path.def.set(props, i, j, modMeasure);
@@ -737,6 +723,15 @@ export default ['$scope', '$element', function ($scope, $element) {
     for (let i = 0; i < viz.length; i++) {
       tasks.push(viz[i].show(qwikCells[i]));
     }
+
+    if (qwikCells.length > viz.length) {
+      // Need to delete the content of the remaining cells
+      for (let i = viz.length; i < qwikCells.length; i++) {
+        // Just remove the element, the object has already been deleted before creating new
+        $(qwikCells[i]).find(".qv-object-wrapper").remove();
+      }
+    }
+
     return Promise.all(tasks);
   }
 
