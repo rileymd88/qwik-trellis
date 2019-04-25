@@ -57,7 +57,7 @@ define([], function () {
 
   var link = {
     ref: "prop.vizId",
-    label: "Base Vizualisation",
+    label: "Base Visualization",
     type: "string",
     component: "dropdown",
     options: function () {
