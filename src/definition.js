@@ -20,23 +20,7 @@ define([], function () {
       });
     });
   }
-
-  var appearance = {
-    uses: "settings",
-    items: {
-      general: {
-        items: {
-          showTitles: {
-            defaultValue: false
-          },
-          details: {
-            show: false
-          }
-        }
-      }
-    }
-  };
-
+  
   var dimensions = {
     uses:"dimensions",    
     min: 1,
@@ -223,13 +207,22 @@ define([], function () {
     }
   };
 
-  var linkSection = {
-    component: "expandable-items",
-    label: "Add-ons",
+  var appearance = {
+    uses: "settings",
     items: {
-      header1: {
+      general: {
+        items: {
+          showTitles: {
+            defaultValue: false
+          },
+          details: {
+            show: false
+          }
+        }
+      },
+      options: {
         type: "items",
-        label: "Qwik Trellis Options",
+        label: "Trellis Options",                      
         items: {
           link: link,
           col: colNum,
@@ -247,7 +240,7 @@ define([], function () {
           advancedMsg5: advancedMsg5
         }
       }
-    }
+    }    
   };
 
   var aboutDefinition = {
@@ -276,8 +269,7 @@ define([], function () {
     component: "accordion",
     items: {      
       data: data,
-      sorting: sorting,
-      linkSection: linkSection,
+      sorting: sorting,      
       appearance: appearance,
       about: aboutDefinition
     }
