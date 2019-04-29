@@ -10,7 +10,12 @@ export default {
   definition: definition,
   controller: controller,
   paint: function () {
+    const scope = this.$scope;
     this.$scope.isInEdit = this.options.interactionState == 2;
+    this.backendApi.getProperties().then(function (props) {
+      scope.sortCriterias = props.qHyperCubeDef.qDimensions[0].qDef.qSortCriterias;
+      scope.nullSuppression = props.qHyperCubeDef.qDimensions[0].qNullSuppression;
+    });
   },
   support: {
     snapshot: false,
