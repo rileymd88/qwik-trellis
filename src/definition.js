@@ -41,7 +41,7 @@ define([], function () {
 
   var link = {
     ref: "prop.vizId",
-    label: "Base Visualization",
+    label: "Base visualization",
     type: "string",
     component: "dropdown",
     options: function () {
@@ -53,37 +53,37 @@ define([], function () {
 
   var label = {
     ref: "prop.label",
-    label: "Dimension Titles",
+    label: "Dimension titles",
     type: "string",
     component: "dropdown",
     options: [
-      { "value": "default", "label": "Chart Default" },
-      { "value": "left", "label": "Left Side Only" },
-      { "value": "right", "label": "Right Side Only" },
-      { "value": "top", "label": "Top Only" },
-      { "value": "bottom", "label": "Bottom Only" }
+      { "value": "default", "label": "Chart default" },
+      { "value": "left", "label": "Left side only" },
+      { "value": "right", "label": "Right side only" },
+      { "value": "top", "label": "Top only" },
+      { "value": "bottom", "label": "Bottom only" }
     ],
     defaultValue: "default"
   };
 
   var labelMes = {
     ref: "prop.labelMes",
-    label: "Measure Titles",
+    label: "Measure titles",
     type: "string",
     component: "dropdown",
     options: [
-      { "value": "default", "label": "Chart Default" },
-      { "value": "left", "label": "Left Side Only" },
-      { "value": "right", "label": "Right Side Only" },
-      { "value": "top", "label": "Top Only" },
-      { "value": "bottom", "label": "Bottom Only" }
+      { "value": "default", "label": "Chart default" },
+      { "value": "left", "label": "Left side only" },
+      { "value": "right", "label": "Right side only" },
+      { "value": "top", "label": "Top only" },
+      { "value": "bottom", "label": "Bottom only" }
     ],
     defaultValue: "default"
   };
 
   var colNum = {
     ref: "prop.columns",
-    label: "Number of Columns",
+    label: "Number of columns",
     type: "string",
     expression: "optional",
     defaultValue: "4"
@@ -91,7 +91,7 @@ define([], function () {
 
   var maxCharts = {
     ref: "prop.maxCharts",
-    label: "Maximum number of Charts",
+    label: "Maximum number of charts",
     type: "string",
     expression: "optional",
     defaultValue: "8"
@@ -99,7 +99,7 @@ define([], function () {
 
   var slideMode = {
     ref: "prop.slideMode",
-    label: "Slide Mode",
+    label: "Slide mode",
     component: 'switch',
     type: "boolean",
     options: [{
@@ -115,7 +115,7 @@ define([], function () {
 
   var advanced = {
     ref: "prop.advanced",
-    label: "Advanced Mode",
+    label: "Advanced mode",
     component: 'switch',
     type: "boolean",
     options: [{
@@ -131,7 +131,7 @@ define([], function () {
 
   var autoRange = {
     ref: "prop.autoRange",
-    label: "Auto Range",
+    label: "Auto range",
     component: 'switch',
     type: "boolean",
     options: [{
@@ -147,7 +147,7 @@ define([], function () {
 
   var showAllDimensionValues = {
     ref: "prop.showAllDims",
-    label: "Show All Possible Dimensions",
+    label: "Show all possible dimensions",
     component: 'switch',
     type: "boolean",
     options: [{
@@ -222,7 +222,7 @@ define([], function () {
       },
       options: {
         type: "items",
-        label: "Trellis Options",                      
+        label: "Trellis options",                      
         items: {
           link: link,
           col: colNum,
