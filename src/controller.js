@@ -136,6 +136,7 @@ export default ['$scope', '$element', function ($scope, $element) {
 
   $scope.$watch("layout.prop.vizId", function (newValue, oldValue) {
     if (newValue !== oldValue) {
+      $scope.showMasterVizSelect = false;
       createTrellisObjects();
     }
   });
