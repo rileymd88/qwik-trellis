@@ -20,18 +20,23 @@ define([], function () {
       });
     });
   }
-  
-  var dimensions = {
-    uses:"dimensions",    
-    min: 1,
-    max: 1,
-  };
  
   var data = {
-    translation: "Common.Data",		
+    uses: 'data',
+    translation: "Common.Data",
     type: "items",
     items: {
-      dimensions: dimensions
+      dimensions: {
+        uses:"dimensions",
+        disabledRef: '',
+        min: 1,
+        max: 1,
+      },
+      measures: {
+        show: false,
+        min: 0,
+        max: 0
+      }
     }
   };
 
