@@ -343,7 +343,6 @@ export default ['$scope', '$element', function ($scope, $element) {
                 $scope.maxValues = [];
                 for (var v = 0; v < viz.length; v++) {
                   $scope.sessionIds.push(viz[v].id);
-
                   for (var m = 0; m < viz[v].model.layout.qHyperCube.qMeasureInfo.length; m++) {
                     $scope.maxValues.push(viz[v].model.layout.qHyperCube.qMeasureInfo[m].qMax);
                   }
@@ -439,7 +438,7 @@ export default ['$scope', '$element', function ($scope, $element) {
               // ensure not last item
               if (split[next]) {
                 // check if includes < and inject partial set
-                if (split[next].includes('{<')) {
+                if (split[next].indexOf('{<') != -1) {
                   mes += split[s] + aggr[i] + "$(vDimSet)";
                 }
                 // else inject full set
