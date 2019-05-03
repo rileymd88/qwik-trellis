@@ -284,6 +284,13 @@ export default ['$scope', '$element', function ($scope, $element) {
             }
           }
           throw Error("Too many dimension values!");
+        } else {
+          $scope.$watch(function () {
+            $scope.showError = false;
+            $scope.errorMsg = "";
+            $scope.showCharts = true;
+          });
+
         }
         resolve(cube);
         enigma.app.destroySessionObject(reply.qInfo.qId);
@@ -567,7 +574,7 @@ export default ['$scope', '$element', function ($scope, $element) {
         resolve(props);
       }
       catch (err) {
-        resolve(props);
+        resolve(props);        
       }
     });
   }
