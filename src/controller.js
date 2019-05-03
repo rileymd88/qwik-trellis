@@ -1,6 +1,7 @@
 var qlik = window.require('qlik');
 import chartTypes from './chartTypes.js';
 import $ from 'jquery';
+import popoverTemplate from './popover.ng.html';
 
 export default ['$scope', '$element', function ($scope, $element) {
   $scope.layoutId = $scope.layout.qInfo.qId;
@@ -103,9 +104,11 @@ export default ['$scope', '$element', function ($scope, $element) {
   }
 
   $scope.$watch("layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]", async function (newValue, oldValue) {
-    if (!$scope.layout.prop.vizId) {
-      $scope.showMasterVizSelect = true;
-      $scope.masterVizs = await getMasterItems();
+    if (!$scope.layout.prop.vizId) {     
+      getMasterItems().then(function(items){
+        $scope.masterVizs = items;
+        $scope.showMasterVizSelect = true;
+      });
     }
     if (newValue !== oldValue && $scope.layout.qHyperCube.qDimensionInfo[0]) {
       try {
@@ -146,6 +149,26 @@ export default ['$scope', '$element', function ($scope, $element) {
       createTrellisObjects();
     }
   });
+  $scope.showAddMasterItemsDialog = function (event) {
+    var items = $scope.masterVizs;
+    var popover = qvangularGlobal.getService("luiPopover").show({
+      template: popoverTemplate,
+      alignTo: event.target,
+      closeOnEscape: true,
+      input: {
+        items: items,    
+        onClick: function (item) {
+          try {
+            $scope.onMasterVizSelected(item.qInfo.qId);
+          }
+          finally {
+            popover.close();
+          }
+        }
+      }
+    });
+  };
+
 
   $scope.$watch("layout.prop.showAllDims", function (newValue, oldValue) {
     if (newValue !== oldValue) {
@@ -558,7 +581,7 @@ export default ['$scope', '$element', function ($scope, $element) {
         if (!model.layout.qAppObjectList.qItems) {
           return resolve({ value: '', label: 'No MasterObjects' });
         }
-        // Resolve an array with master objects.
+        // Resolve an array with master objects.        
         resolve(model.layout.qAppObjectList.qItems);
       });
     });

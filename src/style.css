@@ -10,6 +10,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
+}
+
+#qtcOverlay .add-button {
+  height: 32px;
+  width: 250px;
 }
 
 .qlik-trellis-error {
