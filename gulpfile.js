@@ -11,7 +11,7 @@ var VERSION = process.env.VERSION || 'local-dev';
 
 gulp.task('qext', function () {
 	var qext = {
-		name: 'Trellis Container',
+		name: 'Trellis container',
 		type: 'visualization',
 		description: pkg.description + '\nVersion: ' + VERSION,
 		version: VERSION,
