@@ -19,7 +19,7 @@ export default {
   },
   support: {
     snapshot: false,
-    export: true,
-    exportData: true
+    export: false,
+    exportData: false
   }
 };
