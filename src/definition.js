@@ -1,6 +1,9 @@
 var qlik = window.require('qlik');
 
 define([], function () {
+  function forbiddenVisualization(visualization) {
+    return ['container', 'qlik-show-hide-container', 'qlik-tabbed-container', 'qlik-trellis-container'].indexOf(visualization) > -1;
+  }
   function getMasterItems() {
     return new Promise(function (resolve, reject) {
       var app = qlik.currApp();
@@ -14,7 +17,8 @@ define([], function () {
         return resolve(model.layout.qAppObjectList.qItems.map(function (item) {
           return {
             value: item.qInfo.qId,
-            label: item.qMeta.title
+            label: item.qMeta.title,
+            visualization: item.qData.visualization
           };
         }));
       });
@@ -51,7 +55,10 @@ define([], function () {
     component: "dropdown",
     options: function () {
       return getMasterItems().then(function (items) {
-        return items;
+        var supportedItems = items.filter(function(item) {
+          return !forbiddenVisualization(item.visualization);
+        });
+        return supportedItems;
       });
     }
   };
