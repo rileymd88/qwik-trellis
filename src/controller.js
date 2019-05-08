@@ -14,6 +14,10 @@ export default ['$scope', '$element', function ($scope, $element) {
     return $scope;
   };
 
+  function forbiddenVisualization(visualization) {
+    return ['container', 'qlik-show-hide-container', 'qlik-tabbed-container', 'qlik-trellis-container'].indexOf(visualization) > -1;
+  }
+
   $scope.$watch("layout.prop.columns", function (newValue, oldValue) {
     if (newValue !== oldValue && isReadyToSetupStyles()) {
       setupStyles().then(function () {
@@ -106,7 +110,10 @@ export default ['$scope', '$element', function ($scope, $element) {
   $scope.$watch("layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]", async function (newValue, oldValue) {
     if (!$scope.layout.prop.vizId) {     
       getMasterItems().then(function(items){
-        $scope.masterVizs = items;
+        var supportedItems = items.filter(function(item) {
+          return !forbiddenVisualization(item.qData.visualization);
+        });
+        $scope.masterVizs = supportedItems;
         $scope.showMasterVizSelect = true;
       });
     }
