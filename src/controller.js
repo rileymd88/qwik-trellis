@@ -604,20 +604,15 @@ export default ['$scope', '$element', function ($scope, $element) {
     return new Promise(function (resolve, reject) {
       try {
         var propsString = JSON.stringify(vizProp);
-        if (!$scope.layout.prop.advanced) {
-          var props = JSON.parse(propsString);
-          props.showTitles = true;
-          props.title = dimValue;
-        }
-        else {
+        if ($scope.layout.prop.advanced) {         
           propsString = propsString.replaceAll('$(vDimSetFull)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
           propsString = propsString.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}`);
           propsString = propsString.replaceAll('$(vDim)', `'${dimName}'`);
-          propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);
-          props = JSON.parse(propsString);
-          props.showTitles = true;
-          props.title = dimValue;
+          propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);          
         }
+        var props = JSON.parse(propsString); 
+        props.showTitles = true;
+        props.title = dimValue;
         // Auto Range
         if (props.measureAxis) {
           if ($scope.layout.prop.autoRange) {
