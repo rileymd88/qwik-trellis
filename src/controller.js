@@ -615,6 +615,7 @@ export default ['$scope', '$element', function ($scope, $element) {
           propsString = propsString.replaceAll('$(vDim)', `'${dimName}'`);
           propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);
           props = JSON.parse(propsString);
+          props.showTitles = true;
           props.title = dimValue;
         }
         // Auto Range
