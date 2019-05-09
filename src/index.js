@@ -1,3 +1,4 @@
+var qlik = window.require('qlik');
 import initialProperties from './initial-properties.js';
 import template from './template.html';
 import definition from './definition.js';
@@ -10,12 +11,16 @@ export default {
   definition: definition,
   controller: controller,
   paint: function () {
+    const app = qlik.currApp(this);
     const scope = this.$scope;
     this.$scope.isInEdit = this.options.interactionState == 2;
-    this.backendApi.getProperties().then(function (props) {
-      scope.sortCriterias = props.qHyperCubeDef.qDimensions[0].qDef.qSortCriterias;
-      scope.nullSuppression = props.qHyperCubeDef.qDimensions[0].qNullSuppression;
-    });
+
+    // If this is a master object, fetch the properties of the original object
+    app.getObjectProperties(scope.layout.qExtendsId || scope.layout.qInfo.qId)
+      .then(function (model) {
+        scope.sortCriterias = model.properties.qHyperCubeDef.qDimensions[0].qDef.qSortCriterias;
+        scope.nullSuppression = model.properties.qHyperCubeDef.qDimensions[0].qNullSuppression;
+      });
   },
   support: {
     snapshot: false,
