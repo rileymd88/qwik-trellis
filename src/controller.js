@@ -92,7 +92,7 @@ export default ['$scope', '$element', function ($scope, $element) {
         $scope.colNum = parseInt($scope.layout.prop.columns);
         if ($scope.currentCube) {
           if ($scope.currentCube.length < $scope.colNum) {
-            $scope.colNum = $scope.currentCube.length - 1;
+            $scope.colNum = $scope.currentCube.length;
           }
         }
         $scope.rowNum = Math.ceil($scope.currentCube.length / $scope.colNum);
@@ -108,9 +108,9 @@ export default ['$scope', '$element', function ($scope, $element) {
   }
 
   $scope.$watch("layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]", async function (newValue, oldValue) {
-    if (!$scope.layout.prop.vizId) {     
-      getMasterItems().then(function(items){
-        var supportedItems = items.filter(function(item) {
+    if (!$scope.layout.prop.vizId) {
+      getMasterItems().then(function (items) {
+        var supportedItems = items.filter(function (item) {
           return !forbiddenVisualization(item.qData.visualization);
         });
         $scope.masterVizs = supportedItems;
@@ -163,7 +163,7 @@ export default ['$scope', '$element', function ($scope, $element) {
       alignTo: event.target,
       closeOnEscape: true,
       input: {
-        items: items,    
+        items: items,
         onClick: function (item) {
           try {
             $scope.onMasterVizSelected(item.qInfo.qId);
@@ -309,7 +309,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     // Get viz object
     if ($scope.currentCube) {
       if ($scope.currentCube.length < $scope.colNum) {
-        $scope.colNum = $scope.currentCube.length - 1;
+        $scope.colNum = $scope.currentCube.length;
       }
       // Destroy existing session objects
       for (var i = 0; i < $scope.sessionIds.length; i++) {
@@ -483,9 +483,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     return new Promise(function (resolve, reject) {
       try {
         enigma.app.getMeasure(masterItemIdPath).then(function (mesObject) {
-          mesObject.getMeasure().then(function (mes) {
-            resolve(mes.qDef);
-          });
+          resolve(mesObject);
         });
       }
       catch (err) {
@@ -517,13 +515,19 @@ export default ['$scope', '$element', function ($scope, $element) {
                 // is lib item 
                 if (path.libCheck(props, i)) {
                   // get lib item
-                  let measure = await getMasterMeasure(path.libDef.get(props, i));
+                  let m = await getMasterMeasure(path.libDef.get(props, i));
+                  let mes = await m.getMeasure();
+                  let measure = mes.qDef;
+                  let measureLabel = mes.qLabel;
+                  // eslint-disable-next-line no-console
                   // get modified measure
                   let modMeasure = await createMeasure(
                     measure, dimName, dimValue, showAll, $scope.qtcProps.type);
+                  // get measure label  
                   // set modified measure
                   path.libDefMes(props, i);
                   path.def.set(props, i, modMeasure);
+                  path.measureLabel(props, i, measureLabel);
                 }
                 // is not lib item
                 else {
@@ -552,7 +556,9 @@ export default ['$scope', '$element', function ($scope, $element) {
                     // Check if lib item
                     if (path.libCheck(props, i, j)) {
                       // get lib item
-                      let measure = await getMasterMeasure(path.libDef.get(props, i, j));
+                      let m = await getMasterMeasure(path.libDef.get(props, i));
+                      let mes = await m.getMeasure();
+                      let measure = mes.qDef;
                       // get modified measure
                       let modMeasure = await createMeasure(
                         measure, dimName, dimValue, showAll, $scope.qtcProps.type);
@@ -580,7 +586,7 @@ export default ['$scope', '$element', function ($scope, $element) {
         resolve(props);
       }
       catch (err) {
-        resolve(props);        
+        resolve(props);
       }
     });
   }
@@ -604,13 +610,13 @@ export default ['$scope', '$element', function ($scope, $element) {
     return new Promise(function (resolve, reject) {
       try {
         var propsString = JSON.stringify(vizProp);
-        if ($scope.layout.prop.advanced) {         
+        if ($scope.layout.prop.advanced) {
           propsString = propsString.replaceAll('$(vDimSetFull)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
           propsString = propsString.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}`);
           propsString = propsString.replaceAll('$(vDim)', `'${dimName}'`);
-          propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);          
+          propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);
         }
-        var props = JSON.parse(propsString); 
+        var props = JSON.parse(propsString);
         props.showTitles = true;
         props.title = dimValue;
         // Auto Range
