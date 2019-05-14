@@ -297,7 +297,6 @@ export default ['$scope', '$element', function ($scope, $element) {
             $scope.errorMsg = "";
             $scope.showCharts = true;
           });
-
         }
         resolve(cube);
         enigma.app.destroySessionObject(reply.qInfo.qId);
