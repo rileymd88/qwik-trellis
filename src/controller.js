@@ -515,8 +515,11 @@ export default ['$scope', '$element', function ($scope, $element) {
                 if (path.libCheck(props, i)) {
                   // get lib item
                   let m = await getMasterMeasure(path.libDef.get(props, i));
+                  // get measure
                   let mes = await m.getMeasure();
+                  // get measure definition
                   let measure = mes.qDef;
+                  // get measure label
                   let measureLabel = mes.qLabel;
                   // eslint-disable-next-line no-console
                   // get modified measure
@@ -556,7 +559,9 @@ export default ['$scope', '$element', function ($scope, $element) {
                     if (path.libCheck(props, i, j)) {
                       // get lib item
                       let m = await getMasterMeasure(path.libDef.get(props, i));
+                      // get measure
                       let mes = await m.getMeasure();
+                      // get measure definition
                       let measure = mes.qDef;
                       // get modified measure
                       let modMeasure = await createMeasure(
