@@ -743,18 +743,18 @@ export default ['$scope', '$element', function ($scope, $element) {
   }
 
   function showCharts(viz) {
-    var qwikCells = $scope.layout.prop.slideMode || $scope.mobileMode
+    var trellisCells = $scope.layout.prop.slideMode || $scope.mobileMode
       ? $element.find('.qlik-trellis-slide') : $element.find('.qlik-trellis-cell');
     var tasks = [];
     for (let i = 0; i < viz.length; i++) {
-      tasks.push(viz[i].show(qwikCells[i]));
+      tasks.push(viz[i].show(trellisCells[i]));
     }
 
-    if (qwikCells.length > viz.length) {
+    if (trellisCells.length > viz.length) {
       // Need to delete the content of the remaining cells
-      for (let i = viz.length; i < qwikCells.length; i++) {
+      for (let i = viz.length; i < trellisCells.length; i++) {
         // Just remove the element, the object has already been deleted before creating new
-        $(qwikCells[i]).find(".qv-object-wrapper").remove();
+        $(trellisCells[i]).find(".qv-object-wrapper").remove();
       }
     }
 
