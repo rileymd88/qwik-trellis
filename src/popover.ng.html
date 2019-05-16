@@ -1,9 +1,9 @@
 <lui-popover x-arrow="arrow" class="qsc-dropdown">
 	<lui-popover-body>
 		<ul class="lui-list">
-			<li ng-repeat="item in input.items | orderBy : 'qMeta.title' track by $index" class="lui-list__item  lui-list__action"
+			<li ng-repeat="item in input.items" class="lui-list__item  lui-list__action"
 			 ng-click="input.onClick(item); $event.stopPropagation();">
-				<span class="lui-list__text">{{item.qMeta.title}}</span>
+				<span class="lui-list__text">{{item.label}}</span>
 			</li>
 		</ul>
 	</lui-popover-body>
