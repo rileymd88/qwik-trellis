@@ -307,7 +307,7 @@ export default ['$scope', '$element', function ($scope, $element) {
 
   async function createTrellisObjects() {
     // Get viz object
-    if ($scope.currentCube) {
+    if ($scope.currentCube && $scope.layout && $scope.layout.prop && $scope.layout.prop.vizId) {
       if ($scope.currentCube.length < $scope.colNum) {
         $scope.colNum = $scope.currentCube.length - 1;
       }
