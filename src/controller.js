@@ -150,12 +150,14 @@ export default ['$scope', '$element', function ($scope, $element) {
       createTrellisObjects();
     }
   });
+
   $scope.showAddMasterItemsDialog = function (event) {
     var items = $scope.masterVizs;
-    var popover = window.qvangularGlobal.getService("luiPopover").show({
+    $scope.masterItemPopover = window.qvangularGlobal.getService("luiPopover").show({
       template: popoverTemplate,
       alignTo: event.target,
       closeOnEscape: true,
+      closeOnOutside: true,
       input: {
         items: items,
         onClick: function (item) {
@@ -165,13 +167,22 @@ export default ['$scope', '$element', function ($scope, $element) {
             }
           }
           finally {
-            popover.close();
+            $scope.masterItemPopover.close();
           }
         }
       }
     });
+    $scope.masterItemPopover.closed.then(function () {
+      $(window).off('resize.popover', $scope.onMasterItemPopoverResize);
+    });
+    $(window).on('resize.popover', $scope.onMasterItemPopoverResize);
   };
 
+  $scope.onMasterItemPopoverResize = function () {
+    if ($scope.masterItemPopover) {
+      $scope.masterItemPopover.close();
+    }
+  };
 
   $scope.$watch("layout.prop.showAllDims", function (newValue, oldValue) {
     if (newValue !== oldValue) {
