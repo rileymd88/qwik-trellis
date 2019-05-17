@@ -344,7 +344,7 @@ export default ['$scope', '$element', function ($scope, $element) {
               chartPromises.push(promise);
             }
 
-            return Promise.all(chartPromises).then(function (viz) {
+            return Promise.all(chartPromises).then(async function (viz) {
               if ($scope.qtcProps.autoRange) {
                 $scope.maxValues = [];
                 for (var v = 0; v < viz.length; v++) {
@@ -358,6 +358,53 @@ export default ['$scope', '$element', function ($scope, $element) {
                       $scope.max = $scope.maxValues[t];
                     }
                   }
+                }
+
+                // If combochart then add extra step to get data from each chart to set $scope.max
+                if($scope.vizProp.qInfo.qType == 'combochart') {
+                  let values = [];
+                  let axisMap = [];
+                  for(let mc = 0; mc < $scope.vizProp.qHyperCubeDef.qMeasures.length;mc++) {
+                    axisMap.push({ 
+                      "measure": mc + 1, 
+                      "axis": $scope.vizProp.qHyperCubeDef.qMeasures[mc].qDef.series.axis 
+                    });
+                  }
+                  for(var o = 0; o < viz.length;o++) {
+                    try {
+                      let object = await enigma.app.getObject(viz[o].id);
+                      let params = {
+                        "qPath": "/qHyperCubeDef",
+                        "qPages": [
+                          {
+                            "qLeft": 0,
+                            "qTop": 0,
+                            "qWidth": 10,
+                            "qHeight": 1000
+                          }
+                        ]
+                      };
+                      let hypercube = await object.getHyperCubeData(params);
+                      for(let h = 0; h < hypercube.length;h++) {
+                        for(let m = 0; m < hypercube[h].qMatrix.length; m++) {
+                          for(let r = 0; r < hypercube[h].qMatrix[m].length; r++) {
+                            if(r != 0) {
+                              let axisNumber = axisMap.filter(({ measure }) => measure == r);
+                              values.push({ "axis": axisNumber[0].axis, "value": hypercube[h].qMatrix[m][r].qNum });
+                            }
+                          }
+                        }
+                      }
+                    }
+                    catch(err) {
+                      // eslint-disable-next-line no-console
+                      console.log(err);
+                    }
+                  }
+                  let axis1 = values.filter(({ axis }) => axis == 0);
+                  $scope.maxAxis1 = Math.max.apply(Math, axis1.map(function(v) { return v.value * 1.1; }));
+                  let axis2 = values.filter(({ axis }) => axis == 1);
+                  $scope.maxAxis2 = Math.max.apply(Math, axis2.map(function(v) { return v.value * 1.1; }));
                 }
 
                 let objectPromises = [];
@@ -384,6 +431,16 @@ export default ['$scope', '$element', function ($scope, $element) {
                         props.measureAxis.max = Math.round($scope.max * 1.1);
                         var promise = objects[p].setProperties(props);
                         setPropPromises.push(promise);
+                      }
+                      if($scope.layout.prop.autoRange && props.qInfo.qType == 'combochart') {
+                        props.measureAxes[0].autoMinMax = false;
+                        props.measureAxes[0].minMax = "max";
+                        props.measureAxes[0].max = $scope.maxAxis1;
+                        props.measureAxes[1].autoMinMax = false;
+                        props.measureAxes[1].minMax = "max";
+                        props.measureAxes[1].max = $scope.maxAxis2;
+                        var comboPromise = objects[p].setProperties(props);
+                        setPropPromises.push(comboPromise);
                       }
                     }
 
