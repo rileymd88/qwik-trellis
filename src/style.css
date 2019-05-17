@@ -1,5 +1,24 @@
+#qtcOverlay {
+  position: absolute; /* Sit on top of the page content */
+  width: 100%; /* Full width (cover the whole page) */
+  height: 100%; /* Full height (cover the whole page) */
+  top: 0; 
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000; /* Specify a stack order in case you're using a different order for other elements */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
 
-#qtOverlay {
+#qtcOverlay .add-button {
+  height: 32px;
+  width: 250px;
+}
+
+.qlik-trellis-error {
   position: absolute; /* Sit on top of the page content */
   width: 100%; /* Full width (cover the whole page) */
   height: 100%; /* Full height (cover the whole page) */
@@ -13,56 +32,33 @@
   align-items: center;
 }
 
-.qwik-trellis-error {
-  position: absolute; /* Sit on top of the page content */
-  width: 100%; /* Full width (cover the whole page) */
-  height: 100%; /* Full height (cover the whole page) */
-  top: 0; 
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000; /* Specify a stack order in case you're using a different order for other elements */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-
-
-.qt-custom-title {
-  background-color: gray;
-  flex: 1;
-    margin: 2px;
-}
-
-
-.qwik-trellis-flex-grid {
+.qlik-trellis-flex-grid {
     display: flex ;
     height: 100%;
   }
-  .qwik-trellis-cell {
+  .qlik-trellis-cell {
     flex: 1;
     margin: 2px;
     height: 100% !important;
   }
 
-  .qv-object-qwik-trellis .qv-inner-object {
+  .qv-object-qlik-trellis .qv-inner-object {
     overflow:visible;
   }
 
-  .qwik-trellis-slide {
+  .qlik-trellis-slide {
     height: 90%;
     width: 85%;
     margin: auto;
   }
   
-  .qwik-trellis-slide-container {
+  .qlik-trellis-slide-container {
     width: 100% !important;
     height: 100% !important;
   }
 
   /* Next & previous buttons */
-.qwik-trellis-prev, .qwik-trellis-next {
+.qlik-trellis-prev, .qlik-trellis-next {
     position: absolute;
     top: 40%;
     width: auto;
@@ -71,20 +67,20 @@
     z-index: 1200;
 }
 
-.qwik-trellis-prev:hover,.qwik-trellis-next:hover  { 
+.qlik-trellis-prev:hover, .qlik-trellis-next:hover  { 
   background-color:#D9D9D9;
 }
 
 /* Position the "next button" to the right */
-.qwik-trellis-next {
+.qlik-trellis-next {
   right: 0;
 }
 
-.qwik-trellis-prev {
+.qlik-trellis-prev {
   left: 0;
 }
 
-.qwik-trellis-dot {
+.qlik-trellis-dot {
   height: 10px;
   width: 10px;
   margin: 0 2px;
@@ -94,6 +90,6 @@
   transition: background-color 0.6s ease;
 }
 
-.qwik-trellis-active {
+.qlik-trellis-active {
   background-color: #717171;
 }
