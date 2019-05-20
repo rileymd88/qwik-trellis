@@ -127,21 +127,21 @@ export default ['$scope', '$element', function ($scope, $element) {
         };
       }
       catch (err) {
-        // Destroy existing session objects        
-        if ($scope.sessionIds.length) {
-          for (var i = 0; i < $scope.sessionIds.length; i++) {
-            enigma.app.destroySessionObject($scope.sessionIds[i]);
-          }
-          $scope.showCharts = false;
-        }
+        // Destroy existing session objects
+        destroyTrellisObjects();
       }
     }
   });
 
   $scope.$watch("layout.prop.vizId", function (newValue, oldValue) {
     if (newValue !== oldValue) {
-      $scope.showMasterVizSelect = false;
-      createTrellisObjects();
+      if (newValue) {
+        $scope.showMasterVizSelect = false;
+        createTrellisObjects();
+      } else {
+        $scope.showMasterVizSelect = true;
+        destroyTrellisObjects();
+      }
     }
   });
 
@@ -287,28 +287,28 @@ export default ['$scope', '$element', function ($scope, $element) {
           cube.push(reply.qHyperCube.qDataPages[0].qMatrix[i]);
         }
         if (cube.length > parseInt($scope.layout.prop.maxCharts)) {
-          $scope.$watch(function () {
-            $scope.showError = true;
-            $scope.errorMsg = "Too many dimension values!";
-            $scope.showCharts = false;
-          });
-          if ($scope.sessionIds.length > 0 && enigma && enigma.app) {
-            for (i = 0; i < $scope.sessionIds.length; i++) {
-              enigma.app.destroySessionObject($scope.sessionIds[i]);
-            }
-          }
+          $scope.showError = true;
+          $scope.errorMsg = "Too many dimension values!";
+          destroyTrellisObjects();
           throw Error("Too many dimension values!");
         } else {
-          $scope.$watch(function () {
-            $scope.showError = false;
-            $scope.errorMsg = "";
-            $scope.showCharts = true;
-          });
+          $scope.showError = false;
+          $scope.errorMsg = "";
+          $scope.showCharts = true;
         }
         resolve(cube);
         enigma.app.destroySessionObject(reply.qInfo.qId);
       });
     });
+  }
+
+  function destroyTrellisObjects() {
+    if ($scope.sessionIds.length) {
+      for (var i = 0; i < $scope.sessionIds.length; i++) {
+        enigma.app.destroySessionObject($scope.sessionIds[i]);
+      }
+      $scope.showCharts = false;
+    }
   }
 
   async function createTrellisObjects() {
@@ -321,6 +321,7 @@ export default ['$scope', '$element', function ($scope, $element) {
       for (var i = 0; i < $scope.sessionIds.length; i++) {
         await enigma.app.destroySessionObject($scope.sessionIds[i]);
       }
+
       return enigma.app.getObject($scope.layout.prop.vizId).then(function (vizObject) {
         $scope.vizObject = vizObject;
         $scope.vizObject.getProperties().then(async function (vizProp) {
@@ -352,10 +353,13 @@ export default ['$scope', '$element', function ($scope, $element) {
             }
 
             return Promise.all(chartPromises).then(function (viz) {
+              for (var v = 0; v < viz.length; v++) {
+                $scope.sessionIds.push(viz[v].id);
+              }
+
               if ($scope.qtcProps.autoRange) {
                 $scope.maxValues = [];
                 for (var v = 0; v < viz.length; v++) {
-                  $scope.sessionIds.push(viz[v].id);
                   for (var m = 0; m < viz[v].model.layout.qHyperCube.qMeasureInfo.length; m++) {
                     $scope.maxValues.push(viz[v].model.layout.qHyperCube.qMeasureInfo[m].qMax);
                   }
@@ -382,40 +386,41 @@ export default ['$scope', '$element', function ($scope, $element) {
                   }
 
                   return Promise.all(propPromises).then(function (propPromise) {
-                    let setPropPromises = [];
-                    for (var p = 0; p < propPromise.length; p++) {
-                      var props = JSON.parse(JSON.stringify(propPromise[p]));
-                      if ($scope.layout.prop.autoRange && props.measureAxis) {
-                        props.measureAxis.autoMinMax = false;
-                        props.measureAxis.minMax = "max";
-                        props.measureAxis.max = Math.round($scope.max * 1.1);
-                        var promise = objects[p].setProperties(props);
-                        setPropPromises.push(promise);
-                      }
-                    }
+                    return enigma.app.getUndoInfoObject().then(function (undoInfo) {
+                      return undoInfo.startGroup().then(function (undoGroupId) {
+                        let setPropPromises = [];
+                        for (var p = 0; p < propPromise.length; p++) {
+                          var props = JSON.parse(JSON.stringify(propPromise[p]));
+                          if ($scope.layout.prop.autoRange && props.measureAxis) {
+                            props.measureAxis.autoMinMax = false;
+                            props.measureAxis.minMax = "max";
+                            props.measureAxis.max = Math.round($scope.max * 1.1);
+                            var promise = objects[p].setProperties(props);
+                            setPropPromises.push(promise);
+                          }
+                        }
 
-                    return Promise.all(setPropPromises).then(function () {
-                      var dots = $element.find(".qlik-trellis-dot");
-                      $(dots[0]).addClass("qlik-trellis-active");
-                      $scope.$watch(function () {
-                        $scope.showCharts = true;
-                        $scope.showError = false;
-                        $scope.slideIndex = 0;
+                        return Promise.all(setPropPromises).then(function () {
+                          var dots = $element.find(".qlik-trellis-dot");
+                          $(dots[0]).addClass("qlik-trellis-active");
+                          $scope.showCharts = true;
+                          $scope.showError = false;
+                          $scope.slideIndex = 0;
+                          qlik.resize();
+                          return showCharts(viz).then(function () {
+                            return undoInfo.endGroup(undoGroupId);
+                          });
+                        });
                       });
-                      qlik.resize();
-                      return showCharts(viz);
                     });
                   });
                 });
-              }
-              else {
+              } else {
                 var dots = $element.find(".qlik-trellis-dot");
                 $(dots[0]).addClass("qlik-trellis-active");
-                $scope.$watch(function () {
-                  $scope.showCharts = true;
-                  $scope.showError = false;
-                  $scope.slideIndex = 0;
-                });
+                $scope.showCharts = true;
+                $scope.showError = false;
+                $scope.slideIndex = 0;
                 qlik.resize();
                 return showCharts(viz);
               }
