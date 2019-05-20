@@ -1,23 +1,25 @@
-# Qwik Trellis
-Qwik Trellis is a Qlik Sense extension which allows you to create a trellis chart object based on an existing master vizulisation.
+# Trellis container
+This extension is part of the extension bundles for Qlik Sense. The repository is maintained and moderated by Qlik RD.
 
-# Using Advanced Mode
-Qwik Trellis will try to automatically inject the correct set analysis into your formula, however if you need more flexibility then there is an advanced mode available. When advanced mode is turned on, Qwik Trellis will automatically replace all placeholders found within all formulas in the master item vizulisation with the following values:
+Feel free to fork and suggest pull requests for improvements and bug fixes. Changes will be moderated and reviewed before inclusion in future bundle versions. Please note that emphasis is on backward compatibility, i.e. breaking changes will most likely not be approved.
 
-| Placeholders   | Values                                   |
-|----------------|------------------------------------------|
-| $(vDim)        | Dimension Name                           |
-| $(vDimValue)   | Dimension Value                          |
-| $(vDimSet)     | [Dimension Name]={'Dimension Value'},    |
-| $(vDimSetFull) | {<[Dimension Name]={'Dimension Value'}>} |
+Usage documentation for the extension is available at https://help.qlik.com.
+
+# Developing the extension
+If you want to do code changes to the extension follow these simple steps to get going.
+
+1. Get Qlik Sense Desktop
+1. Create a new app and add Trellis container to a sheet.
+2. Clone the repository
+3. Run `npm install`
+4. Run `npm run build` - to build a dev-version to the /dist folder.
+5. Move the content of the /dist folder to the extension directory. Usually in `C:/Users/<user>/Documents/Qlik/Sense/Extensions/qlik-trellis-container`.
 
 # Resources Used in this Extension
 [Qwik Trellis by Riley MacDonald](https://github.com/rileymd88/qwik-trellis)
 
-
 # Original authors
 [github.com/rileymd88](https://github.com/rileymd88)
-
 
 # License
 Released under the [MIT License](LICENSE).
