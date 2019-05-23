@@ -330,9 +330,12 @@ export default ['$scope', '$element', function ($scope, $element) {
           for (var q = 0; q < $scope.currentCube.length; q++) {
             var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
             var dimValue = $scope.currentCube[q][0].qText;
-            if ($scope.qtcProps) {
+            if ($scope.qtcProps && !$scope.layout.prop.advanced) {
               var promise = getAndSetMeasures($scope.vizProp, dimName, dimValue, $scope.qtcProps);
               propPromises.push(promise);
+            }
+            else {
+              propPromises.push($scope.vizProp);
             }
           }
 
