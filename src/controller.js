@@ -1,5 +1,6 @@
 var qlik = window.require('qlik');
 import chartTypes from './chartTypes.js';
+import helper from './helper.js';
 import $ from 'jquery';
 import popoverTemplate from './popover.ng.html';
 
@@ -13,10 +14,6 @@ export default ['$scope', '$element', function ($scope, $element) {
   $scope.layout.getScope = function () {
     return $scope;
   };
-
-  function forbiddenVisualization(visualization) {
-    return ['container', 'qlik-show-hide-container', 'qlik-tabbed-container', 'qlik-trellis-container'].indexOf(visualization) > -1;
-  }
 
   $scope.$watch("layout.prop.columns", function (newValue, oldValue) {
     if (newValue !== oldValue && isReadyToSetupStyles()) {
@@ -108,12 +105,9 @@ export default ['$scope', '$element', function ($scope, $element) {
   }
 
   $scope.$watch("layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]", async function (newValue, oldValue) {
-    if (!$scope.layout.prop.vizId) {     
-      getMasterItems().then(function(items){
-        var supportedItems = items.filter(function(item) {
-          return !forbiddenVisualization(item.qData.visualization);
-        });
-        $scope.masterVizs = supportedItems;
+    if (!$scope.layout.prop.vizId) {
+      helper.getMasterItems().then(function(items) {
+        $scope.masterVizs = items;
         $scope.showMasterVizSelect = true;
       });
     }
@@ -158,15 +152,17 @@ export default ['$scope', '$element', function ($scope, $element) {
   });
   $scope.showAddMasterItemsDialog = function (event) {
     var items = $scope.masterVizs;
-    var popover = qvangularGlobal.getService("luiPopover").show({
+    var popover = window.qvangularGlobal.getService("luiPopover").show({
       template: popoverTemplate,
       alignTo: event.target,
       closeOnEscape: true,
       input: {
-        items: items,    
+        items: items,
         onClick: function (item) {
           try {
-            $scope.onMasterVizSelected(item.qInfo.qId);
+            if (item.value) {
+              $scope.onMasterVizSelected(item.value);
+            }
           }
           finally {
             popover.close();
@@ -297,7 +293,6 @@ export default ['$scope', '$element', function ($scope, $element) {
             $scope.errorMsg = "";
             $scope.showCharts = true;
           });
-
         }
         resolve(cube);
         enigma.app.destroySessionObject(reply.qInfo.qId);
@@ -583,21 +578,6 @@ export default ['$scope', '$element', function ($scope, $element) {
       catch (err) {
         resolve(props);        
       }
-    });
-  }
-
-  function getMasterItems() {
-    return new Promise(function (resolve, reject) {
-      app.getList('masterobject').then(function (model) {
-        // Close the model to prevent any updates.
-        app.destroySessionObject(model.layout.qInfo.qId);
-        // This is a bit iffy, might be smarter to reject and handle empty lists on the props instead.
-        if (!model.layout.qAppObjectList.qItems) {
-          return resolve({ value: '', label: 'No MasterObjects' });
-        }
-        // Resolve an array with master objects.        
-        resolve(model.layout.qAppObjectList.qItems);
-      });
     });
   }
 

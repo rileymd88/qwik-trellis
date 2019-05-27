@@ -179,47 +179,6 @@ export default {
       }
     ]
   },
-  histogram: {
-    name: "histogram",
-    type: "dimensionBased",
-    autoRange: true,
-    showAll: false,
-    paths: [
-      {
-        loopsCount: 1,
-        path1: (props) => { return props.qHyperCubeDef.qDimensions; },
-        libCheck: (props, index) => {
-          return props.qHyperCubeDef.qDimensions[index].qLibraryId.length > 1;
-        },
-        def: {
-          set: (props, index, newDef) => {
-            props.qHyperCubeDef.qDimensions[index].qDef.qFieldDefs[0] = newDef;
-          },
-          get: (props, index) => {
-            return props.qHyperCubeDef.qDimensions[index].qDef.qFieldDefs[0];
-          }
-        },
-        libDef: {
-          set: (props, index, newLibDef) => {
-            props.qHyperCubeDef.qDimensions[index].qLibraryId = newLibDef;
-          },
-          get: (props, index) => {
-            return props.qHyperCubeDef.qDimensions[index].qLibraryId;
-          }
-        },
-        libDefMes: (props, index) => {
-          props.qHyperCubeDef.qDimensions[index].qLibraryId = '';
-        },
-        generalCheck: (props, index) => {
-          try {
-            return !!props.qHyperCubeDef.qDimensions[index];
-          } catch (err) {
-            return false;
-          }
-        }
-      }
-    ]
-  },
   boxplot: {
     name: "boxplot",
     type: "measureBased",
