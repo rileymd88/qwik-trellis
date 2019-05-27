@@ -423,7 +423,7 @@ export default ['$scope', '$element', function ($scope, $element) {
   function createMeasure(m, dimName, dimValue, showAll, type) {
     return new Promise(function (resolve, reject) {
       if (type == 'measureBased') {
-        var aggr = ["Sum(", "Avg(", "Count(", "Min(", "Max("];
+        var aggr = ["Sum", "Avg", "Count", "Min", "Max"];
         var currentMes = '';
         var formula = m;
         // Loop through all possible aggregation types
@@ -435,7 +435,8 @@ export default ['$scope', '$element', function ($scope, $element) {
             form = currentMes;
           }
           var mes = '';
-          var split = form.split(aggr[i]);
+          var aggrFunc = form.match(new RegExp(aggr[i], 'i'));
+          var split = form.split(new RegExp(`${aggr[i]}\\(`, 'i'));
           // Check to see if form contains aggr
           if (split.length != 1) {
             // loop through split
@@ -446,11 +447,11 @@ export default ['$scope', '$element', function ($scope, $element) {
               if (split[next]) {
                 // check if includes < and inject partial set
                 if (split[next].indexOf('{<') != -1) {
-                  mes += split[s] + aggr[i] + "$(vDimSet)";
+                  mes += split[s] + aggrFunc[0] + "($(vDimSet)";
                 }
                 // else inject full set
                 else {
-                  mes += split[s] + aggr[i] + "$(vDimSetFull)";
+                  mes += split[s] + aggrFunc[0] + "($(vDimSetFull)";
                 }
               }
               // Last item
