@@ -221,7 +221,7 @@ define(['./helper'], function (helper) {
           advancedMsg5: advancedMsg5
         }
       }
-    }    
+    }
   };
 
   var aboutDefinition = {
@@ -234,12 +234,12 @@ define(['./helper'], function (helper) {
         component: 'text'
       },
       paragraph1: {
-        label: `Qwik Trellis is a Qlik Sense extension which allows you to create a trellis
+        label: `Trellis container is a Qlik Sense extension which allows you to create a trellis
           chart object based on an existing master visualization.`,
         component: 'text'
       },
       paragraph2: {
-        label: 'Trellis is based upon an extension created by Riley MacDonald.',
+        label: 'Trellis container is based upon an extension created by Riley MacDonald.',
         component: 'text'
       }
     }
@@ -248,9 +248,9 @@ define(['./helper'], function (helper) {
   return {
     type: "items",
     component: "accordion",
-    items: {      
+    items: {
       data: data,
-      sorting: sorting,      
+      sorting: sorting,
       appearance: appearance,
       about: aboutDefinition
     }
