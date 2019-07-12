@@ -234,7 +234,7 @@ define(['./helper'], function (helper) {
         component: 'text'
       },
       paragraph1: {
-        label: `Trellis container is a Qlik Sense extension which allows you to create a trellis
+        label: `Trellis container is a Qlik Sense chart which allows you to create a trellis
           chart object based on an existing master visualization.`,
         component: 'text'
       },
