@@ -23,6 +23,22 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
   });
 
+  $scope.$watch("layout.qHyperCube.qDimensionInfo[0].calculatedDim", function (newValue, oldValue) {
+    if (newValue !== oldValue && isReadyToSetupStyles()) {
+      setupStyles().then(function () {
+        createTrellisObjects();
+      });
+    }
+  });
+
+  $scope.$watch("layout.qHyperCube.qDimensionInfo[0].baseDim", function (newValue, oldValue) {
+    if (newValue !== oldValue && isReadyToSetupStyles()) {
+      setupStyles().then(function () {
+        createTrellisObjects();
+      });
+    }
+  });
+
   $scope.$watch("mobileMode", function (newValue, oldValue) {
     if (newValue !== oldValue && isReadyToSetupStyles()) {
       setupStyles().then(function () {
@@ -106,7 +122,7 @@ export default ['$scope', '$element', function ($scope, $element) {
 
   $scope.$watch("layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]", async function (newValue, oldValue) {
     if (!$scope.layout.prop.vizId) {
-      helper.getMasterItems().then(function(items) {
+      helper.getMasterItems().then(function (items) {
         $scope.masterVizs = items;
         $scope.showMasterVizSelect = true;
       });
@@ -335,8 +351,14 @@ export default ['$scope', '$element', function ($scope, $element) {
           var objects = "";
           let propPromises = [];
           for (var q = 0; q < $scope.currentCube.length; q++) {
-            var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
-            var dimValue = $scope.currentCube[q][0].qText;
+            let dimName;
+            if ($scope.layout.qHyperCube.qDimensionInfo[0].calculatedDim) {
+              dimName = $scope.layout.qHyperCube.qDimensionInfo[0].baseDim;
+            }
+            else {
+              dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
+            }
+            let dimValue = $scope.currentCube[q][0].qText;
             if ($scope.qtcProps) {
               var promise = getAndSetMeasures($scope.vizProp, dimName, dimValue, $scope.qtcProps);
               propPromises.push(promise);
@@ -346,7 +368,13 @@ export default ['$scope', '$element', function ($scope, $element) {
           return Promise.all(propPromises).then(function (props) {
             let chartPromises = [];
             for (var q = 0; q < $scope.currentCube.length; q++) {
-              var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
+              let dimName;
+              if ($scope.layout.qHyperCube.qDimensionInfo[0].calculatedDim) {
+                dimName = $scope.layout.qHyperCube.qDimensionInfo[0].baseDim;
+              }
+              else {
+                dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
+              }
               var dimValue = $scope.currentCube[q][0].qText;
               var promise = createChart(props[q], dimName, dimValue, q);
               chartPromises.push(promise);
@@ -432,6 +460,8 @@ export default ['$scope', '$element', function ($scope, $element) {
   }
 
   function createMeasure(m, dimName, dimValue, showAll, type) {
+    /* eslint-disable no-console */
+    console.log($scope.layout);
     return new Promise(function (resolve, reject) {
       if (type == 'measureBased') {
         var aggr = ["Sum", "Avg", "Count", "Min", "Max"];
@@ -566,8 +596,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                       // get lib item
                       let measure = await getMasterMeasure(path.libDef.get(props, i, j));
                       // get modified measure
-                      let modMeasure = await createMeasure(
-                        measure, dimName, dimValue, showAll, $scope.qtcProps.type);
+                      let modMeasure = await createMeasure(measure, dimName, dimValue, showAll, $scope.qtcProps.type);
                       // set modified measure
                       path.libDef.set(props, i, j, path.libDefMes(props, i, j));
                       path.def.set(props, i, j, modMeasure);
@@ -577,8 +606,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                       // get measure
                       let measure = path.def.get(props, i, j);
                       // get modified measure
-                      let modMeasure = await createMeasure(
-                        measure, dimName, dimValue, showAll, $scope.qtcProps.type);
+                      let modMeasure = await createMeasure(measure, dimName, dimValue, showAll, $scope.qtcProps.type);
                       // set modified measure
                       path.libDef.set(props, i, j, path.libDefMes(props, i, j));
                       path.def.set(props, i, j, modMeasure);
@@ -592,7 +620,7 @@ export default ['$scope', '$element', function ($scope, $element) {
         resolve(props);
       }
       catch (err) {
-        resolve(props);        
+        resolve(props);
       }
     });
   }
@@ -601,13 +629,13 @@ export default ['$scope', '$element', function ($scope, $element) {
     return new Promise(function (resolve, reject) {
       try {
         var propsString = JSON.stringify(vizProp);
-        if ($scope.layout.prop.advanced) {         
+        if ($scope.layout.prop.advanced) {
           propsString = propsString.replaceAll('$(vDimSetFull)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
           propsString = propsString.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}`);
           propsString = propsString.replaceAll('$(vDim)', `'${dimName}'`);
-          propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);          
+          propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);
         }
-        var props = JSON.parse(propsString); 
+        var props = JSON.parse(propsString);
         props.showTitles = true;
         props.title = dimValue;
         // Auto Range

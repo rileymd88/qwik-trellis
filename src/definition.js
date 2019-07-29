@@ -1,4 +1,35 @@
 define(['./helper'], function (helper) {
+  var calculatedDim = {
+    ref: "qDef.calculatedDim",
+    label: "Calculated Dimension",
+    component: 'switch',
+    type: "boolean",
+    options: [{
+      value: false,
+      label: "Off"
+    }, {
+      value: true,
+      label: "On"
+    }
+    ],
+    defaultValue: false
+  };
+  
+  var baseDim = {
+    ref: "qDef.baseDim",
+    label: "Base Dimension",
+    type: "string",
+    component: "dropdown",
+    show: function (d) {
+      return d.qDef && d.qDef.calculatedDim;
+    },
+    options: function () {
+      return helper.getFields();
+    }
+  };
+
+
+  
   var data = {
     uses: 'data',
     translation: "Common.Data",
@@ -9,6 +40,10 @@ define(['./helper'], function (helper) {
         disabledRef: '',
         min: 1,
         max: 1,
+        items: {
+          calculatedDim: calculatedDim,
+          baseDim: baseDim
+        }
       },
       measures: {
         show: false,
