@@ -19,7 +19,7 @@ define(["qlik"], function (qlik) {
                 value: item.qName,
                 label: item.qName
               };
-            }));
+            }).sort(compare));
           });
         }
         catch (err) {
@@ -61,7 +61,19 @@ define(["qlik"], function (qlik) {
         });
       });
     }
-
-
   };
 });
+
+function compare(a, b) {
+  // Use toUpperCase() to ignore character casing
+  const genreA = a.label.toUpperCase();
+  const genreB = b.label.toUpperCase();
+
+  let comparison = 0;
+  if (genreA > genreB) {
+    comparison = 1;
+  } else if (genreA < genreB) {
+    comparison = -1;
+  }
+  return comparison;
+}
