@@ -461,7 +461,6 @@ export default ['$scope', '$element', function ($scope, $element) {
 
   function createMeasure(m, dimName, dimValue, showAll, type) {
     /* eslint-disable no-console */
-    console.log($scope.layout);
     return new Promise(function (resolve, reject) {
       if (type == 'measureBased') {
         var aggr = ["Sum", "Avg", "Count", "Min", "Max"];
