@@ -14,15 +14,6 @@ export default ['$scope', '$element', function ($scope, $element) {
   $scope.layout.getScope = function () {
     return $scope;
   };
-  /* eslint-disable no-console */
-  console.log(
-    $scope.layout.prop.border,
-    $scope.layout.prop.borderColor,
-    $scope.layout.prop.borderWidth,
-    $scope.layout.prop.customBorderSwitch,
-    $scope.layout.prop.customBorder,
-    $scope.layout.prop.borderStyle
-  );
 
   $scope.$watch("layout.prop.columns", function (newValue, oldValue) {
     if (newValue !== oldValue && isReadyToSetupStyles()) {
@@ -269,7 +260,8 @@ export default ['$scope', '$element', function ($scope, $element) {
         $scope.borderProps = JSON.parse($scope.layout.prop.customBorder);
       }
       catch (err) {
-        console.log(err);
+        /* eslint-disable no-console */
+        console.error(err);
       }
     }
     else {
