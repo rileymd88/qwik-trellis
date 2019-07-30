@@ -256,6 +256,12 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
   });
 
+  $scope.$watch("layout.prop.customBorder", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
 
   $scope.setBorderProps = function() {
     if ($scope.layout.prop.customBorderSwitch) {
