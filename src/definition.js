@@ -5,7 +5,7 @@ define(['./helper'], function (helper) {
     type: "items",
     items: {
       dimensions: {
-        uses:"dimensions",
+        uses: "dimensions",
         disabledRef: '',
         min: 1,
         max: 1,
@@ -94,9 +94,10 @@ define(['./helper'], function (helper) {
     defaultValue: false
   };
 
-  var advanced = {
-    ref: "prop.advanced",
-    label: "Advanced mode",
+
+  var border = {
+    ref: "prop.border",
+    label: "Border",
     component: 'switch',
     type: "boolean",
     options: [{
@@ -109,6 +110,81 @@ define(['./helper'], function (helper) {
     ],
     defaultValue: false
   };
+
+  var borderWidth = {
+    type: "number",
+    component: "slider",
+    label: "Border Width",
+    ref: "prop.borderWidth",
+    min: 0.25,
+    max: 10,
+    step: 0.25,
+    defaultValue: 0.5,
+    show: function (d) {
+      return d.prop && d.prop.border && !d.prop.customBorderSwitch;
+    }
+  };
+
+  var borderColor = {
+    ref: "prop.borderColor",
+    label: "Border Color",
+    type: "object",
+    component: "color-picker",
+    defaultValue: {
+      color: "#B6D7EA",
+      index: "-1"
+    },
+    show: function (d) {
+      return d.prop && d.prop.border && !d.prop.customBorderSwitch;
+    }
+  };
+
+  var borderStyle = {
+    ref: "prop.borderStyle",
+    label: "Border Style",
+    type: "string",
+    component: "dropdown",
+    options: [
+      { "value": "dashed", "label": "Dashed" },
+      { "value": "dotted", "label": "Dotted" },
+      { "value": "solid", "label": "Solid" }
+    ],
+    defaultValue: "solid",
+    show: function (d) {
+      return d.prop && d.prop.border && !d.prop.customBorderSwitch;
+    }
+  };
+
+  var customBorderSwitch = {
+    ref: "prop.customBorderSwitch",
+    label: "Custom Border",
+    component: 'switch',
+    type: "boolean",
+    options: [{
+      value: false,
+      label: "Off"
+    }, {
+      value: true,
+      label: "On"
+    }
+    ],
+    defaultValue: false,
+    show: function (d) {
+      return d.prop && d.prop.border;
+    }
+  };
+
+  var customBorder = {
+    ref: "prop.customBorder",
+    label: "Custom Border Properties",
+    type: "string",
+    expression: "optional",
+    defaultValue: `{"border": "0.5px","border-color": "#b0afae","border-style": "solid"}`,
+    show: function (d) {
+      return d.prop && d.prop.border && d.prop.customBorderSwitch;
+    }
+  };
+
 
   var autoRange = {
     ref: "prop.autoRange",
@@ -140,6 +216,22 @@ define(['./helper'], function (helper) {
     }
     ],
     defaultValue: true
+  };
+
+  var advanced = {
+    ref: "prop.advanced",
+    label: "Advanced mode",
+    component: 'switch',
+    type: "boolean",
+    options: [{
+      value: false,
+      label: "Off"
+    }, {
+      value: true,
+      label: "On"
+    }
+    ],
+    defaultValue: false
   };
 
   var advancedMsg1 = {
@@ -203,7 +295,7 @@ define(['./helper'], function (helper) {
       },
       options: {
         type: "items",
-        label: "Trellis options",                      
+        label: "Trellis options",
         items: {
           link: link,
           col: colNum,
@@ -211,6 +303,12 @@ define(['./helper'], function (helper) {
           label: label,
           labelMes: labelMes,
           showAllDimensionValues: showAllDimensionValues,
+          border: border,
+          borderWidth: borderWidth,
+          borderColor: borderColor,
+          borderStyle: borderStyle,
+          customBorderSwitch: customBorderSwitch,
+          customBorder: customBorder,
           autoRange: autoRange,
           slideMode: slideMode,
           advanced: advanced,

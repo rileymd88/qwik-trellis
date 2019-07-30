@@ -14,6 +14,15 @@ export default ['$scope', '$element', function ($scope, $element) {
   $scope.layout.getScope = function () {
     return $scope;
   };
+  /* eslint-disable no-console */
+  console.log(
+    $scope.layout.prop.border,
+    $scope.layout.prop.borderColor,
+    $scope.layout.prop.borderWidth,
+    $scope.layout.prop.customBorderSwitch,
+    $scope.layout.prop.customBorder,
+    $scope.layout.prop.borderStyle
+  );
 
   $scope.$watch("layout.prop.columns", function (newValue, oldValue) {
     if (newValue !== oldValue && isReadyToSetupStyles()) {
@@ -83,6 +92,8 @@ export default ['$scope', '$element', function ($scope, $element) {
         resolve();
       }
 
+      $scope.setBorderProps();
+
       // Create hypercube
       getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
         $scope.currentCube = cube;
@@ -106,7 +117,7 @@ export default ['$scope', '$element', function ($scope, $element) {
 
   $scope.$watch("layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]", async function (newValue, oldValue) {
     if (!$scope.layout.prop.vizId) {
-      helper.getMasterItems().then(function(items) {
+      helper.getMasterItems().then(function (items) {
         $scope.masterVizs = items;
         $scope.showMasterVizSelect = true;
       });
@@ -132,6 +143,8 @@ export default ['$scope', '$element', function ($scope, $element) {
       }
     }
   });
+
+
 
   $scope.$watch("layout.prop.vizId", function (newValue, oldValue) {
     if (newValue !== oldValue) {
@@ -207,6 +220,60 @@ export default ['$scope', '$element', function ($scope, $element) {
       createTrellisObjects();
     }
   });
+
+  $scope.$watch("layout.prop.border", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      if (newValue == true) {
+        $scope.setBorderProps();
+      }
+      else {
+        $scope.borderProps = {};
+      }
+    }
+  });
+
+  $scope.$watch("layout.prop.borderWidth", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+  $scope.$watch("layout.prop.borderColor.color", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+  $scope.$watch("layout.prop.borderStyle", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+  $scope.$watch("layout.prop.customBorderSwitch", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+
+  $scope.setBorderProps = function() {
+    if ($scope.layout.prop.customBorderSwitch) {
+      try {
+        $scope.borderProps = JSON.parse($scope.layout.prop.customBorder);
+      }
+      catch (err) {
+        console.log(err);
+      }
+    }
+    else {
+      $scope.borderProps = {
+        "border": `${$scope.layout.prop.borderWidth}px`,
+        "border-color": $scope.layout.prop.borderColor.color,
+        "border-style": $scope.layout.prop.borderStyle
+      };
+    }
+  };
 
   $scope.onMasterVizSelected = function (masterViz) {
     enigma.app.getObject($scope.layoutId).then(function (obj) {
@@ -592,7 +659,7 @@ export default ['$scope', '$element', function ($scope, $element) {
         resolve(props);
       }
       catch (err) {
-        resolve(props);        
+        resolve(props);
       }
     });
   }
@@ -601,13 +668,13 @@ export default ['$scope', '$element', function ($scope, $element) {
     return new Promise(function (resolve, reject) {
       try {
         var propsString = JSON.stringify(vizProp);
-        if ($scope.layout.prop.advanced) {         
+        if ($scope.layout.prop.advanced) {
           propsString = propsString.replaceAll('$(vDimSetFull)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
           propsString = propsString.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}`);
           propsString = propsString.replaceAll('$(vDim)', `'${dimName}'`);
-          propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);          
+          propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);
         }
-        var props = JSON.parse(propsString); 
+        var props = JSON.parse(propsString);
         props.showTitles = true;
         props.title = dimValue;
         // Auto Range

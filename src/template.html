@@ -7,7 +7,7 @@
 </div>
 <div ng-if="!layout.prop.slideMode && !mobileMode" ng-repeat="r in [].constructor(rowNum) track by $index"
     id="qlik-trellis-grid-{{layoutId}}" ng-style="rowHeight" ng-show="showCharts" class="qlik-trellis-flex-grid">
-    <div ng-repeat="c in [].constructor(colNum) track by $index" class="qlik-trellis-cell"></div>
+    <div ng-style="borderProps" ng-repeat="c in [].constructor(colNum) track by $index" class="qlik-trellis-cell"></div>
 </div>
 <div ng-if="layout.prop.slideMode || mobileMode" ng-swipe-left="nextSlide()"  ng-show="showCharts" ng-swipe-right="prevSlide()" class="qlik-trellis-slide-container">
     <div ng-show="$index == slideIndex" ng-repeat="s in [].constructor(currentCube.length) track by $index" class="qlik-trellis-slide"></div>
