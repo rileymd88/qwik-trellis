@@ -8,7 +8,7 @@ define(['./helper'], function (helper) {
         uses:"dimensions",
         disabledRef: '',
         min: 1,
-        max: 1,
+        max: 2,
       },
       measures: {
         show: false,
@@ -140,6 +140,44 @@ define(['./helper'], function (helper) {
     }
     ],
     defaultValue: true
+  };
+
+  var customTitle = {
+    ref: "prop.customTitle",
+    label: "Custom Title",
+    component: 'switch',
+    type: "boolean",
+    options: [{
+      value: false,
+      label: "Off"
+    }, {
+      value: true,
+      label: "On"
+    }
+    ],
+    defaultValue: false
+  };
+
+  var customTitleColDef = {
+    ref: "prop.customTitleColDef",
+    label: "Custom Column Title Properties",
+    type: "string",
+    expression: "optional",
+    defaultValue: '{"8"}',
+    show: function (d) {
+      return d.prop && d.prop.customTitle;
+    }
+  };
+
+  var customTitleRowDef = {
+    ref: "prop.customTitleRowDef",
+    label: "Custom Column Title Properties",
+    type: "string",
+    expression: "optional",
+    defaultValue: '{"8"}',
+    show: function (d) {
+      return d.prop && d.prop.customTitle;
+    }
   };
 
   var advancedMsg1 = {

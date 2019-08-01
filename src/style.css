@@ -32,6 +32,14 @@
   align-items: center;
 }
 
+.qlik-trellis-container {
+  display: flex;
+}
+
+.qlik-trellis-title {
+  display: flex;
+}
+
 .qlik-trellis-flex-grid {
     display: flex ;
     height: 100%;
