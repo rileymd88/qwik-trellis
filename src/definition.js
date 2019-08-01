@@ -169,9 +169,31 @@ define(['./helper'], function (helper) {
     }
   };
 
+  var customValuesColDef = {
+    ref: "prop.customValuesColDef",
+    label: "Custom Column Value Properties",
+    type: "string",
+    expression: "optional",
+    defaultValue: '{"8"}',
+    show: function (d) {
+      return d.prop && d.prop.customTitle;
+    }
+  };
+
   var customTitleRowDef = {
     ref: "prop.customTitleRowDef",
-    label: "Custom Column Title Properties",
+    label: "Custom Row Title Properties",
+    type: "string",
+    expression: "optional",
+    defaultValue: '{"8"}',
+    show: function (d) {
+      return d.prop && d.prop.customTitle;
+    }
+  };
+
+  var customValuesRowDef = {
+    ref: "prop.customValuesRowDef",
+    label: "Custom Row Value Properties",
     type: "string",
     expression: "optional",
     defaultValue: '{"8"}',
@@ -248,6 +270,11 @@ define(['./helper'], function (helper) {
           maxCharts: maxCharts,
           label: label,
           labelMes: labelMes,
+          customTitle: customTitle,
+          customTitleColDef: customTitleColDef,
+          customValuesColDef: customValuesColDef,
+          customTitleRowDef: customTitleRowDef,
+          customValuesRowDef: customValuesRowDef,
           showAllDimensionValues: showAllDimensionValues,
           autoRange: autoRange,
           slideMode: slideMode,

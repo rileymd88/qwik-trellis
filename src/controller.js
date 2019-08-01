@@ -90,13 +90,23 @@ export default ['$scope', '$element', function ($scope, $element) {
       }
       getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0], secondFieldDef).then(function (cube) {
         $scope.currentCube = cube;
-        $scope.colNum = parseInt($scope.layout.prop.columns);
-        if ($scope.currentCube) {
-          if ($scope.currentCube.length < $scope.colNum) {
-            $scope.colNum = $scope.currentCube.length - 1;
+        if (typeof secondFieldDef == 'undefined') {
+          $scope.colNum = parseInt($scope.layout.prop.columns);
+          if ($scope.currentCube) {
+            if ($scope.currentCube.length < $scope.colNum) {
+              $scope.colNum = $scope.currentCube.length - 1;
+            }
           }
+          $scope.rowNum = Math.ceil($scope.currentCube.length / $scope.colNum);
         }
-        $scope.rowNum = Math.ceil($scope.currentCube.length / $scope.colNum);
+        else {
+          let rowArray = cube.map(item => item[0].qText);
+          let colArray = cube.map(item => item[1].qText);
+          $scope.rowValues = [...new Set(rowArray.map(item => item))];
+          $scope.colValues = [...new Set(colArray.map(item => item))];
+          $scope.colNum = $scope.colValues.length;
+          $scope.rowNum = $scope.rowValues.length;
+        }
         var rowPercent = 100 / $scope.rowNum;
         var px = $scope.rowNum + 1;
         rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px.toString() + 'px)';
@@ -117,7 +127,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
     if (newValue !== oldValue && $scope.layout.qHyperCube.qDimensionInfo[0]) {
       try {
-        setupStyles().then(function(){
+        setupStyles().then(function () {
           createTrellisObjects();
         });
       }
@@ -131,7 +141,7 @@ export default ['$scope', '$element', function ($scope, $element) {
   $scope.$watch("layout.qHyperCube.qDimensionInfo[1].qGroupFieldDefs[0]", async function (newValue, oldValue) {
     if (newValue !== oldValue && $scope.layout.qHyperCube.qDimensionInfo[0]) {
       try {
-        setupStyles().then(function(){
+        setupStyles().then(function () {
           createTrellisObjects();
         });
       }
