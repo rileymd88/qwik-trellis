@@ -49,22 +49,22 @@
 .qlik-trellis-container-header {
   display: flex;
   flex-direction: column;
-  height: 5%;
+  align-self: flex-end;
 }
 
-.qlik-trellis-column-title {
+/* .qlik-trellis-column-title {
   align-self: center;
-}
+} */
 
 .qlik-trellis-col-labels {
   display: flex;
   flex-direction: row;
 }
 
-.qlik-trellis-col-label {
+/* .qlik-trellis-col-label {
   text-align: center;
   flex: 1;
-}
+} */
 
 .qlik-trellis-container-content {
   display: flex;
@@ -83,9 +83,9 @@
   flex-direction: column;
 }
 
-.qlik-trellis-row-title {
+/* .qlik-trellis-row-title {
   align-self: center;
-}
+} */
 
 .qlik-trellis-row-labels {
   display: flex;
@@ -93,11 +93,11 @@
   flex: 1;
 }
 
-.qlik-trellis-row-label {
+/* .qlik-trellis-row-label {
   align-items: center;
   display: flex;
   flex: 1;
-}
+} */
 
 .qlik-trellis-container-charts {
   display: flex;

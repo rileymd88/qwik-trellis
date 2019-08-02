@@ -155,15 +155,18 @@ define(['./helper'], function (helper) {
       label: "On"
     }
     ],
-    defaultValue: false
+    defaultValue: false,
+    show: function (d) {
+      return d.prop && d.qHyperCubeDef.qDimensions[1];
+    }
   };
 
   var customTitleColDef = {
     ref: "prop.customTitleColDef",
-    label: "Custom Column Title Properties",
+    label: "Column Title Properties",
     type: "string",
     expression: "optional",
-    defaultValue: '{"8"}',
+    defaultValue: `{"text-align": "center", "flex": "1", "font-weight":"bold"}`,
     show: function (d) {
       return d.prop && d.prop.customTitle;
     }
@@ -171,10 +174,10 @@ define(['./helper'], function (helper) {
 
   var customValuesColDef = {
     ref: "prop.customValuesColDef",
-    label: "Custom Column Value Properties",
+    label: "Column Value Properties",
     type: "string",
     expression: "optional",
-    defaultValue: '{"8"}',
+    defaultValue: `{"text-align": "center", "flex": "1", "font-weight":"bold"}`,
     show: function (d) {
       return d.prop && d.prop.customTitle;
     }
@@ -182,10 +185,10 @@ define(['./helper'], function (helper) {
 
   var customTitleRowDef = {
     ref: "prop.customTitleRowDef",
-    label: "Custom Row Title Properties",
+    label: "Row Title Properties",
     type: "string",
     expression: "optional",
-    defaultValue: '{"8"}',
+    defaultValue: `{"align-self": "center", "font-weight":"bold"}`,
     show: function (d) {
       return d.prop && d.prop.customTitle;
     }
@@ -193,10 +196,10 @@ define(['./helper'], function (helper) {
 
   var customValuesRowDef = {
     ref: "prop.customValuesRowDef",
-    label: "Custom Row Value Properties",
+    label: "Row Value Properties",
     type: "string",
     expression: "optional",
-    defaultValue: '{"8"}',
+    defaultValue: `{"align-items": "center", "display": "flex", "flex": "1", "font-weight":"bold"}`,
     show: function (d) {
       return d.prop && d.prop.customTitle;
     }

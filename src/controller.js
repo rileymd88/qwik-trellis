@@ -170,6 +170,19 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
   });
 
+  $scope.$watchCollection('[layout.prop.customTitle, layout.prop.customTitleColDef, layout.prop.customTitleRowDef, layout.prop.customValuesRowDef]', function () {
+    try {
+      $scope.customTitleColDef = JSON.parse($scope.layout.prop.customTitleColDef);
+      $scope.customValuesColDef = JSON.parse($scope.layout.prop.customValuesColDef);
+      $scope.customTitleRowDef = JSON.parse($scope.layout.prop.customTitleRowDef);
+      $scope.customValuesRowDef = JSON.parse($scope.layout.prop.customValuesRowDef);
+    }
+    catch (err) {
+      /* eslint-disable no-console */
+      console.error("It looks like your custom tite properties are not formatted correctly!");
+    }
+  });
+
   $scope.showAddMasterItemsDialog = function (event) {
     var items = $scope.masterVizs;
     $scope.masterItemPopover = window.qvangularGlobal.getService("luiPopover").show({
@@ -203,6 +216,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
   };
 
+
   $scope.$watch("layout.prop.showAllDims", function (newValue, oldValue) {
     if (newValue !== oldValue) {
       createTrellisObjects();
@@ -226,6 +240,8 @@ export default ['$scope', '$element', function ($scope, $element) {
       createTrellisObjects();
     }
   });
+
+
 
   $scope.onMasterVizSelected = function (masterViz) {
     enigma.app.getObject($scope.layoutId).then(function (obj) {
@@ -304,8 +320,6 @@ export default ['$scope', '$element', function ($scope, $element) {
         params.qDimensions.push(secondDimParam);
       }
       return app.createCube(params, function (reply) {
-        /* eslint-disable no-console */
-        console.log(reply);
         var cube = [];
         var i;
         for (i = 0; i < reply.qHyperCube.qDataPages[0].qMatrix.length; i++) {
@@ -659,11 +673,20 @@ export default ['$scope', '$element', function ($scope, $element) {
         }
         var props = JSON.parse(propsString);
         props.showTitles = true;
-        if (typeof dimName2 == 'undefined') {
+        if (typeof dimName2 == 'undefined' || $scope.layout.prop.slideMode || $scope.mobileMode) {
           props.title = dimValue;
         }
         else {
-          props.title = `${dimName}: ${dimValue} & ${dimName2}: ${dimValue2}`;
+          props.showTitles = false;
+          try {
+            $scope.customTitleColDef = JSON.parse($scope.layout.prop.customTitleColDef);
+            $scope.customValuesColDef = JSON.parse($scope.layout.prop.customValuesColDef);
+            $scope.customTitleRowDef = JSON.parse($scope.layout.prop.customTitleRowDef);
+            $scope.customValuesRowDef = JSON.parse($scope.layout.prop.customValuesRowDef);
+          }
+          catch (err) {
+            throw Error("It looks like your custom tite properties are not formatted correctly!");
+          }
         }
 
         // Auto Range

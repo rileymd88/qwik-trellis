@@ -8,20 +8,20 @@
 <div ng-show="showError" class="qlik-trellis-error">
     {{errorMsg}}
 </div>
-<!-- <!-- Custom Title View -->
-<div ng-if="layout.prop.customTitle && layout.qHyperCube.qDimensionInfo[1]" class="qlik-trellis-container">
-    <div class="qlik-trellis-container-header">
-        <div class="qlik-trellis-column-title">{{layout.qHyperCube.qDimensionInfo[1].qFallbackTitle}}</div>
+<!-- 2 Dimension View -->
+<div ng-if="layout.qHyperCube.qDimensionInfo[1]" class="qlik-trellis-container">
+    <div ng-style="headerWidth" class="qlik-trellis-container-header">
+        <div ng-style ="customTitleColDef" class="qlik-trellis-column-title">{{layout.qHyperCube.qDimensionInfo[1].qFallbackTitle}}</div>
         <div class="qlik-trellis-col-labels">
-            <div ng-repeat="colValue in colValues" class="qlik-trellis-col-label">{{colValue}}</div>
+            <div ng-style ="customValuesColDef" ng-repeat="colValue in colValues" class="qlik-trellis-col-label">{{colValue}}</div>
         </div>
     </div>
     <div class="qlik-trellis-container-content">
         <div class="qlik-trellis-container-sidebar">
             <div class="qlik-trellis-container-row">
-                <div class="qlik-trellis-row-title">{{layout.qHyperCube.qDimensionInfo[0].qFallbackTitle}}</div>
+                <div ng-style ="customTitleRowDef" class="qlik-trellis-row-title">{{layout.qHyperCube.qDimensionInfo[0].qFallbackTitle}}</div>
                 <div class="qlik-trellis-row-labels">
-                    <div ng-repeat="rowValue in rowValues" class="qlik-trellis-row-label">{{rowValue}}</div>
+                    <div ng-style = "customValuesRowDef" ng-repeat="rowValue in rowValues" class="qlik-trellis-row-label">{{rowValue}}</div>
                 </div>
             </div>
             <div class="qlik-trellis-container-charts">
@@ -33,8 +33,8 @@
         </div>
     </div>
 </div> -->
-<!-- Standard Title View -->
-<div ng-if="!layout.prop.slideMode && !mobileMode && !layout.prop.customTitle"
+<!-- 1 Dimension View -->
+<div ng-if="!layout.prop.slideMode && !mobileMode && !layout.qHyperCube.qDimensionInfo[1]"
     ng-repeat="r in [].constructor(rowNum) track by $index" id="qlik-trellis-grid-{{layoutId}}" ng-style="rowHeight"
     ng-show="showCharts" class="qlik-trellis-flex-grid">
     <div ng-repeat="c in [].constructor(colNum) track by $index" class="qlik-trellis-cell"></div>
