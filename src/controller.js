@@ -83,6 +83,8 @@ export default ['$scope', '$element', function ($scope, $element) {
         resolve();
       }
 
+      $scope.setBorderProps();
+
       // Create hypercube
       getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
         $scope.currentCube = cube;
@@ -132,6 +134,8 @@ export default ['$scope', '$element', function ($scope, $element) {
       }
     }
   });
+
+
 
   $scope.$watch("layout.prop.vizId", function (newValue, oldValue) {
     if (newValue !== oldValue) {
@@ -207,6 +211,67 @@ export default ['$scope', '$element', function ($scope, $element) {
       createTrellisObjects();
     }
   });
+
+  $scope.$watch("layout.prop.border", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      if (newValue == true) {
+        $scope.setBorderProps();
+      }
+      else {
+        $scope.borderProps = {};
+      }
+    }
+  });
+
+  $scope.$watch("layout.prop.borderWidth", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+  $scope.$watch("layout.prop.borderColor.color", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+  $scope.$watch("layout.prop.borderStyle", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+  $scope.$watch("layout.prop.customBorderSwitch", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+  $scope.$watch("layout.prop.customBorder", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+
+  $scope.setBorderProps = function() {
+    if ($scope.layout.prop.customBorderSwitch) {
+      try {
+        $scope.borderProps = JSON.parse($scope.layout.prop.customBorder);
+      }
+      catch (err) {
+        /* eslint-disable no-console */
+        console.error(err);
+      }
+    }
+    else {
+      $scope.borderProps = {
+        "border": `${$scope.layout.prop.borderWidth}px`,
+        "border-color": $scope.layout.prop.borderColor.color,
+        "border-style": $scope.layout.prop.borderStyle
+      };
+    }
+  };
 
   $scope.onMasterVizSelected = function (masterViz) {
     enigma.app.getObject($scope.layoutId).then(function (obj) {
