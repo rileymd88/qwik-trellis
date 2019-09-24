@@ -89,7 +89,7 @@ export default ['$scope', '$element', function ($scope, $element) {
         $scope.colNum = parseInt($scope.layout.prop.columns);
         if ($scope.currentCube) {
           if ($scope.currentCube.length < $scope.colNum) {
-            $scope.colNum = $scope.currentCube.length - 1;
+            $scope.colNum = $scope.currentCube.length;
           }
         }
         $scope.rowNum = Math.ceil($scope.currentCube.length / $scope.colNum);
@@ -315,7 +315,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     // Get viz object
     if ($scope.currentCube && $scope.layout && $scope.layout.prop && $scope.layout.prop.vizId) {
       if ($scope.currentCube.length < $scope.colNum) {
-        $scope.colNum = $scope.currentCube.length - 1;
+        $scope.colNum = $scope.currentCube.length;
       }
       // Destroy existing session objects
       for (var i = 0; i < $scope.sessionIds.length; i++) {
