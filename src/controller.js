@@ -106,7 +106,7 @@ export default ['$scope', '$element', function ($scope, $element) {
 
   $scope.$watch("layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]", async function (newValue, oldValue) {
     if (!$scope.layout.prop.vizId) {
-      helper.getMasterItems().then(function(items) {
+      helper.getMasterItems().then(function (items) {
         $scope.masterVizs = items;
         $scope.showMasterVizSelect = true;
       });
@@ -498,9 +498,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     return new Promise(function (resolve, reject) {
       try {
         enigma.app.getMeasure(masterItemIdPath).then(function (mesObject) {
-          mesObject.getMeasure().then(function (mes) {
-            resolve(mes.qDef);
-          });
+          resolve(mesObject);
         });
       }
       catch (err) {
@@ -532,13 +530,17 @@ export default ['$scope', '$element', function ($scope, $element) {
                 // is lib item 
                 if (path.libCheck(props, i)) {
                   // get lib item
-                  let measure = await getMasterMeasure(path.libDef.get(props, i));
+                  let m = await getMasterMeasure(path.libDef.get(props, i));
+                  let mes = await m.getMeasure();
+                  let measure = mes.qDef;
+                  let measureLabel = mes.qLabel;
                   // get modified measure
                   let modMeasure = await createMeasure(
                     measure, dimName, dimValue, showAll, $scope.qtcProps.type);
                   // set modified measure
                   path.libDefMes(props, i);
                   path.def.set(props, i, modMeasure);
+                  path.measureLabel(props, i, measureLabel);
                 }
                 // is not lib item
                 else {
@@ -550,6 +552,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                   // set modified measure
                   path.libDefMes(props, i);
                   path.def.set(props, i, modMeasure);
+
                 }
               }
               // Multiple loops
@@ -567,13 +570,17 @@ export default ['$scope', '$element', function ($scope, $element) {
                     // Check if lib item
                     if (path.libCheck(props, i, j)) {
                       // get lib item
-                      let measure = await getMasterMeasure(path.libDef.get(props, i, j));
+                      let m = await getMasterMeasure(path.libDef.get(props, i));
+                      let mes = await m.getMeasure();
+                      let measure = mes.qDef;
+                      let measureLabel = mes.qLabel;
                       // get modified measure
                       let modMeasure = await createMeasure(
                         measure, dimName, dimValue, showAll, $scope.qtcProps.type);
                       // set modified measure
                       path.libDef.set(props, i, j, path.libDefMes(props, i, j));
                       path.def.set(props, i, j, modMeasure);
+                      path.measureLabel(props, i, j, modMeasure);
                     }
                     // Normal measure
                     else {
@@ -595,7 +602,7 @@ export default ['$scope', '$element', function ($scope, $element) {
         resolve(props);
       }
       catch (err) {
-        resolve(props);        
+        resolve(props);
       }
     });
   }
@@ -604,13 +611,13 @@ export default ['$scope', '$element', function ($scope, $element) {
     return new Promise(function (resolve, reject) {
       try {
         var propsString = JSON.stringify(vizProp);
-        if ($scope.layout.prop.advanced) {         
+        if ($scope.layout.prop.advanced) {
           propsString = propsString.replaceAll('$(vDimSetFull)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
           propsString = propsString.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}`);
           propsString = propsString.replaceAll('$(vDim)', `'${dimName}'`);
-          propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);          
+          propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);
         }
-        var props = JSON.parse(propsString); 
+        var props = JSON.parse(propsString);
         props.showTitles = true;
         props.title = dimValue;
         // Auto Range
