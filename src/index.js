@@ -1,4 +1,5 @@
 var qlik = window.require('qlik');
+var $ = window.require('jquery');
 import initialProperties from './initial-properties.js';
 import template from './template.html';
 import definition from './definition.js';
@@ -14,6 +15,8 @@ export default {
     const app = qlik.currApp(this);
     const scope = this.$scope;
     this.$scope.isInEdit = this.options.interactionState == 2;
+    let headerWidth = $(".qlik-trellis-flex-grid").width();
+    scope.headerWidth = { "width": `${headerWidth}` };
 
     // If this is a master object, fetch the properties of the original object
     app.getObjectProperties(scope.layout.qExtendsId || scope.layout.qInfo.qId)
