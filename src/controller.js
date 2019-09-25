@@ -23,6 +23,22 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
   });
 
+  $scope.$watch("layout.qHyperCube.qDimensionInfo[0].calculatedDim", function (newValue, oldValue) {
+    if (newValue !== oldValue && isReadyToSetupStyles()) {
+      setupStyles().then(function () {
+        createTrellisObjects();
+      });
+    }
+  });
+
+  $scope.$watch("layout.qHyperCube.qDimensionInfo[0].baseDim", function (newValue, oldValue) {
+    if (newValue !== oldValue && isReadyToSetupStyles()) {
+      setupStyles().then(function () {
+        createTrellisObjects();
+      });
+    }
+  });
+
   $scope.$watch("mobileMode", function (newValue, oldValue) {
     if (newValue !== oldValue && isReadyToSetupStyles()) {
       setupStyles().then(function () {
@@ -439,12 +455,23 @@ export default ['$scope', '$element', function ($scope, $element) {
           var objects = "";
           let propPromises = [];
           for (var q = 0; q < $scope.currentCube.length; q++) {
-            var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
-            var dimValue = $scope.currentCube[q][0].qText;
+            let dimName;
+            if ($scope.layout.qHyperCube.qDimensionInfo[0].calculatedDim) {
+              dimName = $scope.layout.qHyperCube.qDimensionInfo[0].baseDim;
+            }
+            else {
+              dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
+            }
+            let dimValue = $scope.currentCube[q][0].qText;
             let dimName2;
             let dimValue2;
             if ($scope.layout.qHyperCube.qDimensionInfo[1]) {
-              dimName2 = $scope.layout.qHyperCube.qDimensionInfo[1].qGroupFieldDefs[0];
+              if ($scope.layout.qHyperCube.qDimensionInfo[1].calculatedDim) {
+                dimName2 = $scope.layout.qHyperCube.qDimensionInfo[1].baseDim;
+              }
+              else {
+                dimName2 = $scope.layout.qHyperCube.qDimensionInfo[1].qGroupFieldDefs[0];
+              }
               dimValue2 = $scope.currentCube[q][1].qText;
             }
             if ($scope.qtcProps && !$scope.layout.prop.advanced) {
@@ -459,12 +486,24 @@ export default ['$scope', '$element', function ($scope, $element) {
           return Promise.all(propPromises).then(function (props) {
             let chartPromises = [];
             for (var q = 0; q < $scope.currentCube.length; q++) {
-              var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
+              let dimName;
+              if ($scope.layout.qHyperCube.qDimensionInfo[0].calculatedDim) {
+                dimName = $scope.layout.qHyperCube.qDimensionInfo[0].baseDim;
+              }
+              
+              else {
+                dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
+              }
               var dimValue = $scope.currentCube[q][0].qText;
               let dimName2;
               let dimValue2;
               if ($scope.layout.qHyperCube.qDimensionInfo[1]) {
-                dimName2 = $scope.layout.qHyperCube.qDimensionInfo[1].qGroupFieldDefs[0];
+                if ($scope.layout.qHyperCube.qDimensionInfo[1].calculatedDim) {
+                  dimName2 = $scope.layout.qHyperCube.qDimensionInfo[1].baseDim;
+                }
+                else {
+                  dimName2 = $scope.layout.qHyperCube.qDimensionInfo[1].qGroupFieldDefs[0];
+                }                
                 dimValue2 = $scope.currentCube[q][1].qText;
               }
               var promise = createChart(props[q], dimName, dimValue, dimName2, dimValue2, q);
@@ -551,6 +590,7 @@ export default ['$scope', '$element', function ($scope, $element) {
   }
 
   function createMeasure(m, dimName, dimValue, dimName2, dimValue2, showAll, type) {
+    /* eslint-disable no-console */
     return new Promise(function (resolve, reject) {
       if (type == 'measureBased') {
         var aggr = ["Sum", "Avg", "Count", "Min", "Max"];
@@ -704,8 +744,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                       let measure = mes.qDef;
                       let measureLabel = mes.qLabel;
                       // get modified measure
-                      let modMeasure = await createMeasure(
-                        measure, dimName, dimValue, dimName2, dimValue2, showAll, $scope.qtcProps.type);
+                      let modMeasure = await createMeasure(measure, dimName, dimValue, dimName2, dimValue2, showAll, $scope.qtcProps.type);
                       // set modified measure
                       path.libDef.set(props, i, j, path.libDefMes(props, i, j));
                       path.def.set(props, i, j, modMeasure);
@@ -716,8 +755,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                       // get measure
                       let measure = path.def.get(props, i, j);
                       // get modified measure
-                      let modMeasure = await createMeasure(
-                        measure, dimName, dimValue, dimName2, dimValue2, showAll, $scope.qtcProps.type);
+                      let modMeasure = await createMeasure(measure, dimName, dimValue, dimName2, dimValue2, showAll, $scope.qtcProps.type);
                       // set modified measure
                       path.libDef.set(props, i, j, path.libDefMes(props, i, j));
                       path.def.set(props, i, j, modMeasure);
