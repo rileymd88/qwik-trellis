@@ -27,7 +27,7 @@
             <div class="qlik-trellis-container-charts">
             <div ng-repeat="r in [].constructor(rowNum) track by $index" id="qlik-trellis-grid-{{layoutId}}"
                  ng-show="showCharts" class="qlik-trellis-flex-grid">
-                <div ng-repeat="c in [].constructor(colNum) track by $index" class="qlik-trellis-cell"></div>
+                <div ng-style="borderProps" ng-repeat="c in [].constructor(colNum) track by $index" class="qlik-trellis-cell"></div>
             </div>
         </div>
         </div>
@@ -37,7 +37,7 @@
 <div ng-if="!layout.prop.slideMode && !mobileMode && !layout.qHyperCube.qDimensionInfo[1]"
     ng-repeat="r in [].constructor(rowNum) track by $index" id="qlik-trellis-grid-{{layoutId}}" ng-style="rowHeight"
     ng-show="showCharts" class="qlik-trellis-flex-grid">
-    <div ng-repeat="c in [].constructor(colNum) track by $index" class="qlik-trellis-cell"></div>
+    <div ng-style="borderProps" ng-repeat="c in [].constructor(colNum) track by $index" class="qlik-trellis-cell"></div>
 </div>
 <!-- Mobile View -->
 <div ng-if="layout.prop.slideMode || mobileMode" ng-swipe-left="nextSlide()" ng-show="showCharts"

@@ -83,6 +83,8 @@ export default ['$scope', '$element', function ($scope, $element) {
         resolve();
       }
 
+      $scope.setBorderProps();
+
       // Create hypercube
       let secondFieldDef;
       if ($scope.layout.qHyperCube.qDimensionInfo[1]) {
@@ -94,7 +96,7 @@ export default ['$scope', '$element', function ($scope, $element) {
           $scope.colNum = parseInt($scope.layout.prop.columns);
           if ($scope.currentCube) {
             if ($scope.currentCube.length < $scope.colNum) {
-              $scope.colNum = $scope.currentCube.length - 1;
+            $scope.colNum = $scope.currentCube.length;
             }
           }
           $scope.rowNum = Math.ceil($scope.currentCube.length / $scope.colNum);
@@ -151,6 +153,8 @@ export default ['$scope', '$element', function ($scope, $element) {
       }
     }
   });
+
+
 
   $scope.$watch("layout.prop.vizId", function (newValue, oldValue) {
     if (newValue !== oldValue) {
@@ -241,7 +245,66 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
   });
 
+  $scope.$watch("layout.prop.border", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      if (newValue == true) {
+        $scope.setBorderProps();
+      }
+      else {
+        $scope.borderProps = {};
+      }
+    }
+  });
 
+  $scope.$watch("layout.prop.borderWidth", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+  $scope.$watch("layout.prop.borderColor.color", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+  $scope.$watch("layout.prop.borderStyle", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+  $scope.$watch("layout.prop.customBorderSwitch", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+  $scope.$watch("layout.prop.customBorder", function (newValue, oldValue) {
+    if (newValue !== oldValue) {
+      $scope.setBorderProps();
+    }
+  });
+
+
+  $scope.setBorderProps = function() {
+    if ($scope.layout.prop.customBorderSwitch) {
+      try {
+        $scope.borderProps = JSON.parse($scope.layout.prop.customBorder);
+      }
+      catch (err) {
+        /* eslint-disable no-console */
+        console.error(err);
+      }
+    }
+    else {
+      $scope.borderProps = {
+        "border": `${$scope.layout.prop.borderWidth}px`,
+        "border-color": $scope.layout.prop.borderColor ? $scope.layout.prop.borderColor.color : $scope.layout.prop.borderColor,
+        "border-style": $scope.layout.prop.borderStyle
+      };
+    }
+  };
 
   $scope.onMasterVizSelected = function (masterViz) {
     enigma.app.getObject($scope.layoutId).then(function (obj) {
@@ -354,7 +417,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     // Get viz object
     if ($scope.currentCube && $scope.layout && $scope.layout.prop && $scope.layout.prop.vizId) {
       if ($scope.currentCube.length < $scope.colNum) {
-        $scope.colNum = $scope.currentCube.length - 1;
+        $scope.colNum = $scope.currentCube.length;
       }
       // Destroy existing session objects
       for (var i = 0; i < $scope.sessionIds.length; i++) {
@@ -382,9 +445,12 @@ export default ['$scope', '$element', function ($scope, $element) {
               dimName2 = $scope.layout.qHyperCube.qDimensionInfo[1].qGroupFieldDefs[0];
               dimValue2 = $scope.currentCube[q][1].qText;
             }
-            if ($scope.qtcProps) {
+            if ($scope.qtcProps && !$scope.layout.prop.advanced) {
               var promise = getAndSetMeasures($scope.vizProp, dimName, dimValue, dimName2, dimValue2, $scope.qtcProps);
               propPromises.push(promise);
+            }
+            else {
+              propPromises.push($scope.vizProp);
             }
           }
 
@@ -559,9 +625,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     return new Promise(function (resolve, reject) {
       try {
         enigma.app.getMeasure(masterItemIdPath).then(function (mesObject) {
-          mesObject.getMeasure().then(function (mes) {
-            resolve(mes.qDef);
-          });
+          resolve(mesObject);
         });
       }
       catch (err) {
@@ -593,13 +657,17 @@ export default ['$scope', '$element', function ($scope, $element) {
                 // is lib item 
                 if (path.libCheck(props, i)) {
                   // get lib item
-                  let measure = await getMasterMeasure(path.libDef.get(props, i));
+                  let m = await getMasterMeasure(path.libDef.get(props, i));
+                  let mes = await m.getMeasure();
+                  let measure = mes.qDef;
+                  let measureLabel = mes.qLabel;
                   // get modified measure
                   let modMeasure = await createMeasure(
                     measure, dimName, dimValue, dimName2, dimValue2, showAll, $scope.qtcProps.type);
                   // set modified measure
                   path.libDefMes(props, i);
                   path.def.set(props, i, modMeasure);
+                  path.measureLabel(props, i, measureLabel);
                 }
                 // is not lib item
                 else {
@@ -611,6 +679,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                   // set modified measure
                   path.libDefMes(props, i);
                   path.def.set(props, i, modMeasure);
+
                 }
               }
               // Multiple loops
@@ -628,13 +697,17 @@ export default ['$scope', '$element', function ($scope, $element) {
                     // Check if lib item
                     if (path.libCheck(props, i, j)) {
                       // get lib item
-                      let measure = await getMasterMeasure(path.libDef.get(props, i, j));
+                      let m = await getMasterMeasure(path.libDef.get(props, i));
+                      let mes = await m.getMeasure();
+                      let measure = mes.qDef;
+                      let measureLabel = mes.qLabel;
                       // get modified measure
                       let modMeasure = await createMeasure(
                         measure, dimName, dimValue, dimName2, dimValue2, showAll, $scope.qtcProps.type);
                       // set modified measure
                       path.libDef.set(props, i, j, path.libDefMes(props, i, j));
                       path.def.set(props, i, j, modMeasure);
+                      path.measureLabel(props, i, j, modMeasure);
                     }
                     // Normal measure
                     else {
