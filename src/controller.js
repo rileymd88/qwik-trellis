@@ -298,13 +298,13 @@ export default ['$scope', '$element', function ($scope, $element) {
       }
     }
     else {
-      if ($scope.layout.prop.border) {
+     if ($scope.layout.prop.border) {
         $scope.borderProps = {
           "border": `${$scope.layout.prop.borderWidth}px`,
           "border-color": $scope.layout.prop.borderColor ? $scope.layout.prop.borderColor.color : $scope.layout.prop.borderColor,
           "border-style": $scope.layout.prop.borderStyle
         };
-      }    
+      }      
     }
   };
 
