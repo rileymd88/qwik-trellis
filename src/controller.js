@@ -267,7 +267,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     else {
       $scope.borderProps = {
         "border": `${$scope.layout.prop.borderWidth}px`,
-        "border-color": $scope.layout.prop.borderColor.color,
+        "border-color": $scope.layout.prop.borderColor ? $scope.layout.prop.borderColor.color : $scope.layout.prop.borderColor,
         "border-style": $scope.layout.prop.borderStyle
       };
     }
