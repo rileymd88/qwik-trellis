@@ -8,7 +8,7 @@ define(['./helper'], function (helper) {
         uses: "dimensions",
         disabledRef: '',
         min: 1,
-        max: 1,
+        max: 2,
       },
       measures: {
         show: false,
@@ -201,6 +201,22 @@ define(['./helper'], function (helper) {
     ],
     defaultValue: true
   };
+  
+  var advanced = {
+    ref: "prop.advanced",
+    label: "Advanced mode",
+    component: 'switch',
+    type: "boolean",
+    options: [{
+      value: false,
+      label: "Off"
+    }, {
+      value: true,
+      label: "On"
+    }
+    ],
+    defaultValue: false
+  };
 
   var showAllDimensionValues = {
     ref: "prop.showAllDims",
@@ -218,9 +234,9 @@ define(['./helper'], function (helper) {
     defaultValue: true
   };
 
-  var advanced = {
-    ref: "prop.advanced",
-    label: "Advanced mode",
+  var customTitle = {
+    ref: "prop.customTitle",
+    label: "Custom Title",
     component: 'switch',
     type: "boolean",
     options: [{
@@ -231,7 +247,54 @@ define(['./helper'], function (helper) {
       label: "On"
     }
     ],
-    defaultValue: false
+    defaultValue: false,
+    show: function (d) {
+      return d.prop && d.qHyperCubeDef.qDimensions[1];
+    }
+  };
+
+  var customTitleColDef = {
+    ref: "prop.customTitleColDef",
+    label: "Column Title Properties",
+    type: "string",
+    expression: "optional",
+    defaultValue: `{"text-align": "center", "flex": "1", "font-weight":"bold"}`,
+    show: function (d) {
+      return d.prop && d.prop.customTitle;
+    }
+  };
+
+  var customValuesColDef = {
+    ref: "prop.customValuesColDef",
+    label: "Column Value Properties",
+    type: "string",
+    expression: "optional",
+    defaultValue: `{"text-align": "center", "flex": "1", "font-weight":"bold"}`,
+    show: function (d) {
+      return d.prop && d.prop.customTitle;
+    }
+  };
+
+  var customTitleRowDef = {
+    ref: "prop.customTitleRowDef",
+    label: "Row Title Properties",
+    type: "string",
+    expression: "optional",
+    defaultValue: `{"align-self": "center", "font-weight":"bold"}`,
+    show: function (d) {
+      return d.prop && d.prop.customTitle;
+    }
+  };
+
+  var customValuesRowDef = {
+    ref: "prop.customValuesRowDef",
+    label: "Row Value Properties",
+    type: "string",
+    expression: "optional",
+    defaultValue: `{"align-items": "center", "display": "flex", "flex": "1", "font-weight":"bold"}`,
+    show: function (d) {
+      return d.prop && d.prop.customTitle;
+    }
   };
 
   var advancedMsg1 = {
@@ -302,6 +365,11 @@ define(['./helper'], function (helper) {
           maxCharts: maxCharts,
           label: label,
           labelMes: labelMes,
+          customTitle: customTitle,
+          customTitleColDef: customTitleColDef,
+          customValuesColDef: customValuesColDef,
+          customTitleRowDef: customTitleRowDef,
+          customValuesRowDef: customValuesRowDef,
           showAllDimensionValues: showAllDimensionValues,
           border: border,
           borderWidth: borderWidth,

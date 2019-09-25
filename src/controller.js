@@ -86,15 +86,29 @@ export default ['$scope', '$element', function ($scope, $element) {
       $scope.setBorderProps();
 
       // Create hypercube
-      getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
+      let secondFieldDef;
+      if ($scope.layout.qHyperCube.qDimensionInfo[1]) {
+        secondFieldDef = $scope.layout.qHyperCube.qDimensionInfo[1].qGroupFieldDefs[0];
+      }
+      getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0], secondFieldDef).then(function (cube) {
         $scope.currentCube = cube;
-        $scope.colNum = parseInt($scope.layout.prop.columns);
-        if ($scope.currentCube) {
-          if ($scope.currentCube.length < $scope.colNum) {
-            $scope.colNum = $scope.currentCube.length;
+        if (typeof secondFieldDef == 'undefined') {
+          $scope.colNum = parseInt($scope.layout.prop.columns);
+          if ($scope.currentCube) {
+            if ($scope.currentCube.length < $scope.colNum) {
+              $scope.colNum = $scope.currentCube.length;
+            }
           }
+          $scope.rowNum = Math.ceil($scope.currentCube.length / $scope.colNum);
         }
-        $scope.rowNum = Math.ceil($scope.currentCube.length / $scope.colNum);
+        else {
+          let rowArray = cube.map(item => item[0].qText);
+          let colArray = cube.map(item => item[1].qText);
+          $scope.rowValues = [...new Set(rowArray.map(item => item))];
+          $scope.colValues = [...new Set(colArray.map(item => item))];
+          $scope.colNum = $scope.colValues.length;
+          $scope.rowNum = $scope.rowValues.length;
+        }
         var rowPercent = 100 / $scope.rowNum;
         var px = $scope.rowNum + 1;
         rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px.toString() + 'px)';
@@ -115,18 +129,23 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
     if (newValue !== oldValue && $scope.layout.qHyperCube.qDimensionInfo[0]) {
       try {
-        // Create hypercube
-        getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0]).then(function (cube) {
-          $scope.currentCube = cube;
+        setupStyles().then(function () {
           createTrellisObjects();
         });
-        $scope.rowNum = Math.ceil($scope.currentCube.length / $scope.colNum);
-        var rowPercent = 100 / $scope.rowNum;
-        var px = $scope.rowNum + 1;
-        rowPercent = 'calc(' + rowPercent.toString() + '%' + ' - ' + px.toString() + 'px)';
-        $scope.rowHeight = {
-          "height": rowPercent
-        };
+      }
+      catch (err) {
+        // Destroy existing session objects
+        destroyTrellisObjects();
+      }
+    }
+  });
+
+  $scope.$watch("layout.qHyperCube.qDimensionInfo[1].qGroupFieldDefs[0]", async function (newValue, oldValue) {
+    if (newValue !== oldValue && $scope.layout.qHyperCube.qDimensionInfo[0]) {
+      try {
+        setupStyles().then(function () {
+          createTrellisObjects();
+        });
       }
       catch (err) {
         // Destroy existing session objects
@@ -152,6 +171,19 @@ export default ['$scope', '$element', function ($scope, $element) {
   $scope.$watch("layout.prop.advanced", function (newValue, oldValue) {
     if (newValue !== oldValue) {
       createTrellisObjects();
+    }
+  });
+
+  $scope.$watchCollection('[layout.prop.customTitle, layout.prop.customTitleColDef, layout.prop.customTitleRowDef, layout.prop.customValuesRowDef]', function () {
+    try {
+      $scope.customTitleColDef = JSON.parse($scope.layout.prop.customTitleColDef);
+      $scope.customValuesColDef = JSON.parse($scope.layout.prop.customValuesColDef);
+      $scope.customTitleRowDef = JSON.parse($scope.layout.prop.customTitleRowDef);
+      $scope.customValuesRowDef = JSON.parse($scope.layout.prop.customValuesRowDef);
+    }
+    catch (err) {
+      /* eslint-disable no-console */
+      console.error("It looks like your custom tite properties are not formatted correctly!");
     }
   });
 
@@ -187,6 +219,7 @@ export default ['$scope', '$element', function ($scope, $element) {
       $scope.masterItemPopover.close();
     }
   };
+
 
   $scope.$watch("layout.prop.showAllDims", function (newValue, oldValue) {
     if (newValue !== oldValue) {
@@ -265,11 +298,13 @@ export default ['$scope', '$element', function ($scope, $element) {
       }
     }
     else {
-      $scope.borderProps = {
-        "border": `${$scope.layout.prop.borderWidth}px`,
-        "border-color": $scope.layout.prop.borderColor ? $scope.layout.prop.borderColor.color : $scope.layout.prop.borderColor,
-        "border-style": $scope.layout.prop.borderStyle
-      };
+      if ($scope.layout.prop.border) {
+        $scope.borderProps = {
+          "border": `${$scope.layout.prop.borderWidth}px`,
+          "border-color": $scope.layout.prop.borderColor ? $scope.layout.prop.borderColor.color : $scope.layout.prop.borderColor,
+          "border-style": $scope.layout.prop.borderStyle
+        };
+      }      
     }
   };
 
@@ -323,10 +358,9 @@ export default ['$scope', '$element', function ($scope, $element) {
     qlik.resize();
   };
 
-  function getCube(dimDef) {
+  function getCube(dimDef, dimDef2) {
     return new Promise(function (resolve, reject) {
-      var dimDefMes = dimDef.replace('=', '');
-      return app.createCube({
+      let params = {
         "qDimensions": [{
           "qDef": {
             "qFieldDefs": [dimDef],
@@ -334,18 +368,23 @@ export default ['$scope', '$element', function ($scope, $element) {
           },
           "qNullSuppression": $scope.nullSuppression
         }],
-        "qMeasures": [{
-          "qDef": {
-            "qDef": `Count({1}${dimDefMes})`,
-            "qLabel": "dim"
-          }
-        }],
         "qSortCriterias": $scope.sortCriterias,
         "qInitialDataFetch": [{
-          qHeight: 50,
+          qHeight: 500,
           qWidth: 2
         }]
-      }, function (reply) {
+      };
+      if (typeof dimDef2 != 'undefined') {
+        let secondDimParam = {
+          "qDef": {
+            "qFieldDefs": [dimDef2],
+            "qSortCriterias": $scope.sortCriterias
+          },
+          "qNullSuppression": $scope.nullSuppression
+        };
+        params.qDimensions.push(secondDimParam);
+      }
+      return app.createCube(params, function (reply) {
         var cube = [];
         var i;
         for (i = 0; i < reply.qHyperCube.qDataPages[0].qMatrix.length; i++) {
@@ -402,8 +441,14 @@ export default ['$scope', '$element', function ($scope, $element) {
           for (var q = 0; q < $scope.currentCube.length; q++) {
             var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
             var dimValue = $scope.currentCube[q][0].qText;
+            let dimName2;
+            let dimValue2;
+            if ($scope.layout.qHyperCube.qDimensionInfo[1]) {
+              dimName2 = $scope.layout.qHyperCube.qDimensionInfo[1].qGroupFieldDefs[0];
+              dimValue2 = $scope.currentCube[q][1].qText;
+            }
             if ($scope.qtcProps && !$scope.layout.prop.advanced) {
-              var promise = getAndSetMeasures($scope.vizProp, dimName, dimValue, $scope.qtcProps);
+              var promise = getAndSetMeasures($scope.vizProp, dimName, dimValue, dimName2, dimValue2, $scope.qtcProps);
               propPromises.push(promise);
             }
             else {
@@ -416,7 +461,13 @@ export default ['$scope', '$element', function ($scope, $element) {
             for (var q = 0; q < $scope.currentCube.length; q++) {
               var dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
               var dimValue = $scope.currentCube[q][0].qText;
-              var promise = createChart(props[q], dimName, dimValue, q);
+              let dimName2;
+              let dimValue2;
+              if ($scope.layout.qHyperCube.qDimensionInfo[1]) {
+                dimName2 = $scope.layout.qHyperCube.qDimensionInfo[1].qGroupFieldDefs[0];
+                dimValue2 = $scope.currentCube[q][1].qText;
+              }
+              var promise = createChart(props[q], dimName, dimValue, dimName2, dimValue2, q);
               chartPromises.push(promise);
             }
 
@@ -499,7 +550,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
   }
 
-  function createMeasure(m, dimName, dimValue, showAll, type) {
+  function createMeasure(m, dimName, dimValue, dimName2, dimValue2, showAll, type) {
     return new Promise(function (resolve, reject) {
       if (type == 'measureBased') {
         var aggr = ["Sum", "Avg", "Count", "Min", "Max"];
@@ -546,14 +597,27 @@ export default ['$scope', '$element', function ($scope, $element) {
         if ($scope.layout.prop.showAllDims && showAll) {
           currentMes += " + 0*Sum({1}1)";
         }
-        currentMes = currentMes.replaceAll('$(vDimSetFull)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
-        currentMes = currentMes.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}`);
-        currentMes = currentMes.replaceAll('$(vDim)', `'${dimValue}'`);
+        if (typeof dimName2 != 'undefined') {
+          currentMes = currentMes.replaceAll('$(vDimSetFull)', `{<[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}>}`);
+          currentMes = currentMes.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}`);
+          currentMes = currentMes.replaceAll('$(vDim)', `'${dimValue}'`);
+        }
+        else {
+          currentMes = currentMes.replaceAll('$(vDimSetFull)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
+          currentMes = currentMes.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}`);
+          currentMes = currentMes.replaceAll('$(vDim)', `'${dimValue}'`);
+        }
         resolve(currentMes);
       }
       else {
         var d = m.replace(/=/g, "");
-        var dimension = `=If([${dimName}] = '${dimValue}', ${d})`;
+        let dimension;
+        if (typeof dimName2 != 'undefined') {
+          dimension = `=If([${dimName}] = '${dimValue}' and [${dimName2}] = '${dimValue2}, ${d})`;
+        }
+        else {
+          dimension = `=If([${dimName}] = '${dimValue}', ${d})`;
+        }
         resolve(dimension);
       }
     });
@@ -572,7 +636,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     });
   }
 
-  async function getAndSetMeasures(vizProp, dimName, dimValue, chartTypeProps) {
+  async function getAndSetMeasures(vizProp, dimName, dimValue, dimName2, dimValue2, chartTypeProps) {
     const paths = chartTypeProps.paths;
     const showAll = chartTypeProps.showAll;
     return new Promise(async function (resolve, reject) {
@@ -601,7 +665,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                   let measureLabel = mes.qLabel;
                   // get modified measure
                   let modMeasure = await createMeasure(
-                    measure, dimName, dimValue, showAll, $scope.qtcProps.type);
+                    measure, dimName, dimValue, dimName2, dimValue2, showAll, $scope.qtcProps.type);
                   // set modified measure
                   path.libDefMes(props, i);
                   path.def.set(props, i, modMeasure);
@@ -613,7 +677,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                   let measure = path.def.get(props, i);
                   // get modified measure
                   let modMeasure = await createMeasure(
-                    measure, dimName, dimValue, showAll, $scope.qtcProps.type);
+                    measure, dimName, dimValue, dimName2, dimValue2, showAll, $scope.qtcProps.type);
                   // set modified measure
                   path.libDefMes(props, i);
                   path.def.set(props, i, modMeasure);
@@ -641,7 +705,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                       let measureLabel = mes.qLabel;
                       // get modified measure
                       let modMeasure = await createMeasure(
-                        measure, dimName, dimValue, showAll, $scope.qtcProps.type);
+                        measure, dimName, dimValue, dimName2, dimValue2, showAll, $scope.qtcProps.type);
                       // set modified measure
                       path.libDef.set(props, i, j, path.libDefMes(props, i, j));
                       path.def.set(props, i, j, modMeasure);
@@ -653,7 +717,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                       let measure = path.def.get(props, i, j);
                       // get modified measure
                       let modMeasure = await createMeasure(
-                        measure, dimName, dimValue, showAll, $scope.qtcProps.type);
+                        measure, dimName, dimValue, dimName2, dimValue2, showAll, $scope.qtcProps.type);
                       // set modified measure
                       path.libDef.set(props, i, j, path.libDefMes(props, i, j));
                       path.def.set(props, i, j, modMeasure);
@@ -672,7 +736,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     });
   }
 
-  function createChart(vizProp, dimName, dimValue, i) {
+  function createChart(vizProp, dimName, dimValue, dimName2, dimValue2, i) {
     return new Promise(function (resolve, reject) {
       try {
         var propsString = JSON.stringify(vizProp);
@@ -684,7 +748,22 @@ export default ['$scope', '$element', function ($scope, $element) {
         }
         var props = JSON.parse(propsString);
         props.showTitles = true;
-        props.title = dimValue;
+        if (typeof dimName2 == 'undefined' || $scope.layout.prop.slideMode || $scope.mobileMode) {
+          props.title = dimValue;
+        }
+        else {
+          props.showTitles = false;
+          try {
+            $scope.customTitleColDef = JSON.parse($scope.layout.prop.customTitleColDef);
+            $scope.customValuesColDef = JSON.parse($scope.layout.prop.customValuesColDef);
+            $scope.customTitleRowDef = JSON.parse($scope.layout.prop.customTitleRowDef);
+            $scope.customValuesRowDef = JSON.parse($scope.layout.prop.customValuesRowDef);
+          }
+          catch (err) {
+            throw Error("It looks like your custom tite properties are not formatted correctly!");
+          }
+        }
+
         // Auto Range
         if (props.measureAxis) {
           if ($scope.layout.prop.autoRange) {
