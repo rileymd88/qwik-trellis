@@ -96,7 +96,7 @@ export default ['$scope', '$element', function ($scope, $element) {
           $scope.colNum = parseInt($scope.layout.prop.columns);
           if ($scope.currentCube) {
             if ($scope.currentCube.length < $scope.colNum) {
-            $scope.colNum = $scope.currentCube.length;
+              $scope.colNum = $scope.currentCube.length;
             }
           }
           $scope.rowNum = Math.ceil($scope.currentCube.length / $scope.colNum);
@@ -298,11 +298,13 @@ export default ['$scope', '$element', function ($scope, $element) {
       }
     }
     else {
-      $scope.borderProps = {
-        "border": `${$scope.layout.prop.borderWidth}px`,
-        "border-color": $scope.layout.prop.borderColor ? $scope.layout.prop.borderColor.color : $scope.layout.prop.borderColor,
-        "border-style": $scope.layout.prop.borderStyle
-      };
+      if ($scope.layout.prop.border) {
+        $scope.borderProps = {
+          "border": `${$scope.layout.prop.borderWidth}px`,
+          "border-color": $scope.layout.prop.borderColor ? $scope.layout.prop.borderColor.color : $scope.layout.prop.borderColor,
+          "border-style": $scope.layout.prop.borderStyle
+        };
+      }    
     }
   };
 
