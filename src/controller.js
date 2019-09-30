@@ -199,7 +199,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
     catch (err) {
       /* eslint-disable no-console */
-      console.error("It looks like your custom tite properties are not formatted correctly!");
+      console.error("It looks like your custom title properties are not formatted correctly!");
     }
   });
 
@@ -310,7 +310,7 @@ export default ['$scope', '$element', function ($scope, $element) {
       }
       catch (err) {
         /* eslint-disable no-console */
-        console.error(err);
+        console.error("It looks like your custom border properties are not formatted correctly!");
       }
     }
     else {
@@ -408,9 +408,9 @@ export default ['$scope', '$element', function ($scope, $element) {
         }
         if (cube.length > parseInt($scope.layout.prop.maxCharts)) {
           $scope.showError = true;
-          $scope.errorMsg = "Too many dimension values!";
+          $scope.errorMsg = "Too many dimension values! You can change the maximum amount of dimension values setting in Appearance -> Trellis Options -> Maximum number of charts";
           destroyTrellisObjects();
-          throw Error("Too many dimension values!");
+          throw Error($scope.errorMsg);
         } else {
           $scope.showError = false;
           $scope.errorMsg = "";
@@ -749,8 +749,6 @@ export default ['$scope', '$element', function ($scope, $element) {
         m = m.replaceAll('$(vDimSetFullAuto)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
         m = m.replaceAll('$(vDimSetPartialAuto)', `[${dimName}]={'${dimValue}'}`);
         m = m.replaceAll('$(vDimSetAuto)', `[${dimName}]={'${dimValue}'},`);
-        // eslint-disable-next-line no-console
-        console.log(m);
         resolve(m);
       }
       else {
