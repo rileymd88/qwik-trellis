@@ -112,6 +112,7 @@
 
 .qlik-trellis-cell {
   flex: 1;
+  height: 100%;
 }
 
 .qv-object-qlik-trellis .qv-inner-object {
