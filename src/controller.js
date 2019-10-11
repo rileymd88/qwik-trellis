@@ -41,6 +41,8 @@ export default ['$scope', '$element', function ($scope, $element) {
 
   $scope.$watch("layout.prop.slideMode", function (newValue, oldValue) {
     if (newValue !== oldValue) {
+      // eslint-disable-next-line no-console
+      console.log($scope.currentCubeLength);
       setupStyles().then(function () {
         createTrellisObjects();
       });
@@ -86,15 +88,15 @@ export default ['$scope', '$element', function ($scope, $element) {
       }
       getCube($scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0], secondFieldDef).then(function (cube) {
         $scope.currentCube = cube;
-        $scope.currentCubeLength = $scope.layout.qHyperCube.qDimensionInfo[1] ? $scope.currentCube[0].cube1 * $scope.currentCube[0].cube2 : $scope.currentCube.length;
+        $scope.currentCubeLength = $scope.layout.qHyperCube.qDimensionInfo[1] ? $scope.currentCube[0].cube1.length * $scope.currentCube[0].cube2.length : $scope.currentCube.length;
         if (typeof secondFieldDef == 'undefined') {
           $scope.colNum = parseInt($scope.layout.prop.columns);
           if ($scope.currentCube) {
-            if ($scope.currentCube.length < $scope.colNum) {
-              $scope.colNum = $scope.currentCube.length;
+            if ($scope.currentCubeLength < $scope.colNum) {
+              $scope.colNum = $scope.currentCubeLength;
             }
           }
-          $scope.rowNum = Math.ceil($scope.currentCube.length / $scope.colNum);
+          $scope.rowNum = Math.ceil($scope.currentCubeLength / $scope.colNum);
         }
         else {
           let rowArray = cube[0].cube1.map(item => item[0].qText);
@@ -322,34 +324,30 @@ export default ['$scope', '$element', function ($scope, $element) {
   };
 
   $scope.prevSlide = function () {
-    $scope.$watch(function () {
-      $scope.slideIndex = $scope.slideIndex - 1;
-      var dots = $element.find(".qlik-trellis-dot");
-      for (var i = 0; i < dots.length; i++) {
-        if ($scope.slideIndex == i) {
-          $(dots[i]).addClass("qlik-trellis-active");
-        }
-        else {
-          $(dots[i]).removeClass("qlik-trellis-active");
-        }
+    $scope.slideIndex = $scope.slideIndex - 1;
+    var dots = $element.find(".qlik-trellis-dot");
+    for (var i = 0; i < dots.length; i++) {
+      if ($scope.slideIndex == i) {
+        $(dots[i]).addClass("qlik-trellis-active");
       }
-    });
+      else {
+        $(dots[i]).removeClass("qlik-trellis-active");
+      }
+    }
     qlik.resize();
   };
 
   $scope.nextSlide = function () {
-    $scope.$watch(function () {
-      $scope.slideIndex = $scope.slideIndex + 1;
-      var dots = $element.find(".qlik-trellis-dot");
-      for (var i = 0; i < dots.length; i++) {
-        if ($scope.slideIndex == i) {
-          $(dots[i]).addClass("qlik-trellis-active");
-        }
-        else {
-          $(dots[i]).removeClass("qlik-trellis-active");
-        }
+    $scope.slideIndex = $scope.slideIndex + 1;
+    var dots = $element.find(".qlik-trellis-dot");
+    for (var i = 0; i < dots.length; i++) {
+      if ($scope.slideIndex == i) {
+        $(dots[i]).addClass("qlik-trellis-active");
       }
-    });
+      else {
+        $(dots[i]).removeClass("qlik-trellis-active");
+      }
+    }
     qlik.resize();
   };
 
@@ -518,7 +516,7 @@ export default ['$scope', '$element', function ($scope, $element) {
             let chartPromises = [];
             let twoDimensions = $scope.layout.qHyperCube.qDimensionInfo[1] ? true : false;
             if (!twoDimensions) {
-              for (var q = 0; q < $scope.currentCube.length; q++) {
+              for (var q = 0; q < $scope.currentCubeLength; q++) {
                 let dimName;
                 if ($scope.layout.qHyperCube.qDimensionInfo[0].calculatedDim) {
                   dimName = $scope.layout.qHyperCube.qDimensionInfo[0].baseDim;
@@ -838,11 +836,22 @@ export default ['$scope', '$element', function ($scope, $element) {
         }
         var props = JSON.parse(propsString);
         props.showTitles = true;
-        if (typeof dimName2 == 'undefined' || $scope.layout.prop.slideMode || $scope.mobileMode) {
-          props.title = dimValue;
+        if (typeof dimName2 == 'undefined') {
+          if($scope.mobileMode || $scope.layout.slideMode) {
+            props.title = `${dimName}: ${dimValue}`; 
+          }
+          else {
+            props.title = dimValue;
+          }
         }
         else {
-          props.showTitles = false;
+          if($scope.mobileMode || $scope.layout.prop.slideMode) {
+            props.showTitles = true;
+            props.title = `${dimName}: ${dimValue}, ${dimName2}: ${dimValue2}`; 
+          }
+          else {
+            props.showTitles = false;
+          }
           try {
             $scope.customTitleColDef = JSON.parse($scope.layout.prop.customTitleColDef);
             $scope.customValuesColDef = JSON.parse($scope.layout.prop.customValuesColDef);

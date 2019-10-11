@@ -9,7 +9,7 @@
     {{errorMsg}}
 </div>
 <!-- 2 Dimension View -->
-<div ng-if="layout.qHyperCube.qDimensionInfo[1]" class="qlik-trellis-container">
+<div ng-if="layout.qHyperCube.qDimensionInfo[1] && !mobileMode && !layout.prop.slideMode" class="qlik-trellis-container">
     <div ng-style="headerWidth" class="qlik-trellis-container-header">
         <div ng-style ="customTitleColDef" class="qlik-trellis-column-title">{{layout.qHyperCube.qDimensionInfo[1].qFallbackTitle}}</div>
         <div class="qlik-trellis-col-labels">
