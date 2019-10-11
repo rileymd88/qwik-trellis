@@ -41,8 +41,6 @@ export default ['$scope', '$element', function ($scope, $element) {
 
   $scope.$watch("layout.prop.slideMode", function (newValue, oldValue) {
     if (newValue !== oldValue) {
-      // eslint-disable-next-line no-console
-      console.log($scope.currentCubeLength);
       setupStyles().then(function () {
         createTrellisObjects();
       });
