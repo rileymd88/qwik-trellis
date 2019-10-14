@@ -13,7 +13,7 @@
     <div ng-style="headerWidth" class="qlik-trellis-container-header">
         <div ng-style ="customTitleColDef" class="qlik-trellis-column-title">{{layout.qHyperCube.qDimensionInfo[1].qFallbackTitle}}</div>
         <div class="qlik-trellis-col-labels">
-            <div ng-style ="customValuesColDef" git ="colValue in colValues" class="qlik-trellis-col-label">{{colValue}}</div>
+            <div ng-style ="customValuesColDef" ng-repeat ="colValue in colValues" class="qlik-trellis-col-label">{{colValue}}</div>
         </div>
     </div>
     <div class="qlik-trellis-container-content">
