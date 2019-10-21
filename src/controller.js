@@ -351,10 +351,31 @@ export default ['$scope', '$element', function ($scope, $element) {
 
   function getCube(dimDef, dimDef2) {
     return new Promise(async function (resolve, reject) {
-      var cube = [];
+      let cube = [];
       if (!$scope.layout.qHyperCube.qDimensionInfo[1]) {
-        for (var i = 0; i < $scope.layout.qHyperCube.qDataPages[0].qMatrix.length; i++) {
-          cube.push($scope.layout.qHyperCube.qDataPages[0].qMatrix[i]);
+        let params = {
+          "qDimensions": [{
+            "qDef": {
+              "qFieldDefs": [dimDef],
+              "qSortCriterias": $scope.sortCriterias1
+            },
+            "qNullSuppression": $scope.nullSuppression1
+          }],
+          "qMeasures": [{
+            "qDef": {
+              "qDef": `Sum({1}1)`
+            }
+          }],
+          "qSortCriterias": $scope.sortCriterias,
+          "qInitialDataFetch": [{
+            qHeight: 500,
+            qWidth: 2
+          }]
+        };
+        let reply = await app.createCube(params);
+        console.log(reply);
+        for (var i = 0; i < reply.layout.qHyperCube.qDataPages[0].qMatrix.length; i++) {
+          cube.push(reply.layout.qHyperCube.qDataPages[0].qMatrix[i]);
         }
         if (cube.length > parseInt($scope.layout.prop.maxCharts)) {
           $scope.showError = true;
@@ -378,6 +399,11 @@ export default ['$scope', '$element', function ($scope, $element) {
             },
             "qNullSuppression": $scope.nullSuppression1
           }],
+          "qMeasures": [{
+            "qDef": {
+              "qDef": `Sum({1}1)`
+            }
+          }],
           "qSortCriterias": $scope.sortCriterias,
           "qInitialDataFetch": [{
             qHeight: 500,
@@ -398,6 +424,11 @@ export default ['$scope', '$element', function ($scope, $element) {
               "qSortCriterias": $scope.sortCriterias2
             },
             "qNullSuppression": $scope.nullSuppression2
+          }],
+          "qMeasures": [{
+            "qDef": {
+              "qDef": `Sum({1}1)`
+            }
           }],
           "qSortCriterias": $scope.sortCriterias,
           "qInitialDataFetch": [{
