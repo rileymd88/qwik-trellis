@@ -303,7 +303,7 @@ export default ['$scope', '$element', function ($scope, $element) {
   });
 
 
-  $scope.setBorderProps = function() {
+  $scope.setBorderProps = function () {
     if ($scope.layout.prop.customBorderSwitch) {
       try {
         $scope.borderProps = JSON.parse($scope.layout.prop.customBorder);
@@ -320,7 +320,7 @@ export default ['$scope', '$element', function ($scope, $element) {
           "border-color": $scope.layout.prop.borderColor ? $scope.layout.prop.borderColor.color : $scope.layout.prop.borderColor,
           "border-style": $scope.layout.prop.borderStyle
         };
-      }      
+      }
     }
   };
 
@@ -490,7 +490,7 @@ export default ['$scope', '$element', function ($scope, $element) {
               if ($scope.layout.qHyperCube.qDimensionInfo[0].calculatedDim) {
                 dimName = $scope.layout.qHyperCube.qDimensionInfo[0].baseDim;
               }
-              
+
               else {
                 dimName = $scope.layout.qHyperCube.qDimensionInfo[0].qGroupFieldDefs[0];
               }
@@ -503,7 +503,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                 }
                 else {
                   dimName2 = $scope.layout.qHyperCube.qDimensionInfo[1].qGroupFieldDefs[0];
-                }                
+                }
                 dimValue2 = $scope.currentCube[q][1].qText;
               }
               var promise = createChart(props[q], dimName, dimValue, dimName2, dimValue2, q);
@@ -591,171 +591,164 @@ export default ['$scope', '$element', function ($scope, $element) {
 
   function createMeasure(m, dimName, dimValue, showAll, type) {
     return new Promise(function (resolve, reject) {
-      if (type == 'measureBased') {
-        // List of in scope aggregrations
-        const aggr = ["Sum", "Avg", "Count", "Min", "Max"];
+      // List of in scope aggregations
+      const aggr = ["Sum", "Avg", "Count", "Min", "Max"];
 
-        // Replace string values with text
-        m = m.replace(/\s+/g, 'REMOVE_SPACES');
-        m = m.replace(/[\[]/g, 'START_BRACKET');
-        m = m.replace(/[\]]/g, 'END_BRACKET');
+      // Replace string values with text
+      m = m.replace(/\s+/g, 'REMOVE_SPACES');
+      m = m.replace(/[\[]/g, 'START_BRACKET');
+      m = m.replace(/[\]]/g, 'END_BRACKET');
 
-        // Ensure whitespace for anything wrapped in single quotes is preserved
-        let singleQuotes = m.match(/'(.*?)'/g);
-        for (let c in singleQuotes) {
-          let singleQuote = singleQuotes[c];
-          let singleQuoteNew = singleQuote.replace(/REMOVE_SPACES/g, ' ');
-          let regex = new RegExp(singleQuote, "g");
-          m = m.replace(regex, singleQuoteNew);
+      // Ensure whitespace for anything wrapped in single quotes is preserved
+      let singleQuotes = m.match(/'(.*?)'/g);
+      for (let c in singleQuotes) {
+        let singleQuote = singleQuotes[c];
+        let singleQuoteNew = singleQuote.replace(/REMOVE_SPACES/g, ' ');
+        let regex = new RegExp(singleQuote, "g");
+        m = m.replace(regex, singleQuoteNew);
+      }
+      // Ensure whitespace for anything wrapped in a square brackets is preserved
+      let squareBrackets = m.match(/\START_BRACKET.*?END_BRACKET/g);
+      for (let s in squareBrackets) {
+        let squareBracket = squareBrackets[s];
+        let squareBracketNew = squareBracket.replace(/REMOVE_SPACES/g, ' ');
+        let regex = new RegExp(squareBracket, "g");
+        m = m.replace(regex, squareBracketNew);
+      }
+      // Ensure whitespace for anything wrapped in quotes is preserved
+      let quotes = m.match(/"(.*?)"/g);
+      for (let q in quotes) {
+        let quote = quotes[q];
+        let quoteNew = quote.replace(/REMOVE_SPACES/g, ' ');
+        let regex = new RegExp(quote, "g");
+        m = m.replace(regex, quoteNew);
+      }
+
+      // Replace placeholder text values
+      m = m.replace(/REMOVE_SPACES/g, '');
+      m = m.replace(/START_BRACKET/g, '[');
+      m = m.replace(/END_BRACKET/g, ']');
+
+      // Convert all aggregations to have same case
+      for (let a in aggr) {
+        let regex = new RegExp(`${aggr[a]}\\(`, 'gi');
+        m = m.replace(regex, `${aggr[a]}(`);
+      }
+
+      // Inject partial set analysis when set exists with {<
+      let sets = m.match(/{<(.*?)>}/g);
+      for (let s in sets) {
+        let newSet = sets[s].replace(/{</, '{<$(vDimSetAuto)');
+        m = m.replaceAll(sets[s], newSet);
+      }
+      // Inject partial set analysis when set exists with {$<
+      sets = m.match(/{\$<(.*?)>}/g);
+      for (let s in sets) {
+        let newSet = sets[s].replace(/{\$</, '{$<$(vDimSetAuto)');
+        m = m.replaceAll(sets[s], newSet);
+      }
+
+      // Inject partial set analysis when set exists with {1<
+      sets = m.match(/{1<(.*?)>}/g);
+      for (let s in sets) {
+        let newSet = sets[s].replace(/{1</, '{1<$(vDimSetAuto)');
+        m = m.replaceAll(sets[s], newSet);
+      }
+
+      // Inject partial set analysis when set exists with {0<
+      sets = m.match(/{0<(.*?)>}/g);
+      for (let s in sets) {
+        let newSet = sets[s].replace(/{0</, '{0<$(vDimSetAuto)');
+        m = m.replaceAll(sets[s], newSet);
+      }
+
+      // Inject partial set analysis when set exists with {$1<
+      sets = m.match(/{\$1<(.*?)>}/g);
+      for (let s in sets) {
+        let newSet = sets[s].replace(/{\$1</, '{$1<$(vDimSetAuto)');
+        m = m.replaceAll(sets[s], newSet);
+      }
+
+      // Inject partial set analysis when set exists with {$}
+      sets = m.match(/{\$(.*?)}/g);
+      for (let s in sets) {
+        let newSet = sets[s].replace(/{\$}/, '{$<$(vDimSetPartialAuto)>}');
+        m = m.replaceAll(sets[s], newSet);
+      }
+
+      // Inject partial set analysis when set exists with {1}
+      sets = m.match(/\({1(.*?)}/g);
+      for (let s in sets) {
+        let newSet = sets[s].replace(/\{1\}/, '{1<$(vDimSetPartialAuto)>}');
+        m = m.replaceAll(sets[s], newSet);
+      }
+
+      // Inject partial set analysis when set exists with {0}
+      sets = m.match(/\({0(.*?)}/g);
+      for (let s in sets) {
+        let newSet = sets[s].replace(/\{0\}/, '{0<$(vDimSetPartialAuto)>}');
+        m = m.replaceAll(sets[s], newSet);
+      }
+
+      // Inject partial set analysis when set exists with {$1}
+      sets = m.match(/{\$1(.*?)}/g);
+      for (let s in sets) {
+        let newSet = sets[s].replace(/\{\$1\}/, '{$1<$(vDimSetPartialAuto)>}');
+        m = m.replaceAll(sets[s], newSet);
+      }
+
+
+      /* for (let a in aggr) {
+        let regex = new RegExp(`\${aggr}\\(\\w+\\)`.replace('${aggr}', aggr[a]), 'g');
+        let noSets = m.match(new RegExp(regex));
+        for (let n in noSets) {
+          let newNoSet = noSets[n].replace(`${aggr[a]}(`, `${aggr[a]}($(vDimSetFullAuto)`);
+          m = m.replaceAll(noSets[n], newNoSet);
         }
-        // Ensure whitespace for anything wrapped in a square brackets is preserved
-        let squareBrackets = m.match(/\START_BRACKET.*?END_BRACKET/g);
-        for (let s in squareBrackets) {
-          let squareBracket = squareBrackets[s];
-          let squareBracketNew = squareBracket.replace(/REMOVE_SPACES/g, ' ');
-          let regex = new RegExp(squareBracket, "g");
-          m = m.replace(regex, squareBracketNew);
-        }
-        // Ensure whitespace for anything wrapped in quotes is preserved
-        let quotes = m.match(/"(.*?)"/g);
-        for (let q in quotes) {
-          let quote = quotes[q];
-          let quoteNew = quote.replace(/REMOVE_SPACES/g, ' ');
-          let regex = new RegExp(quote, "g");
-          m = m.replace(regex, quoteNew);
-        }
+      } */
 
-        // Replace placeholder text values
-        m = m.replace(/REMOVE_SPACES/g, '');
-        m = m.replace(/START_BRACKET/g, '[');
-        m = m.replace(/END_BRACKET/g, ']');
-
-        // Convert all aggregations to have same case
-        for (let a in aggr) {
-          let regex = new RegExp(`${aggr[a]}\\(`, 'gi');
-          m = m.replace(regex, `${aggr[a]}(`);
-        }
-
-        // Inject partial set analysis when set exists with {<
-        let sets = m.match(/{<(.*?)>}/g);
-        for (let s in sets) {
-          let newSet = sets[s].replace(/{</, '{<$(vDimSetAuto)');
-          m = m.replaceAll(sets[s], newSet);
-        }
-        // Inject partial set analysis when set exists with {$<
-        sets = m.match(/{\$<(.*?)>}/g);
-        for (let s in sets) {
-          let newSet = sets[s].replace(/{\$</, '{$<$(vDimSetAuto)');
-          m = m.replaceAll(sets[s], newSet);
-        }
-
-        // Inject partial set analysis when set exists with {1<
-        sets = m.match(/{1<(.*?)>}/g);
-        for (let s in sets) {
-          let newSet = sets[s].replace(/{1</, '{1<$(vDimSetAuto)');
-          m = m.replaceAll(sets[s], newSet);
-        }
-
-        // Inject partial set analysis when set exists with {0<
-        sets = m.match(/{0<(.*?)>}/g);
-        for (let s in sets) {
-          let newSet = sets[s].replace(/{0</, '{0<$(vDimSetAuto)');
-          m = m.replaceAll(sets[s], newSet);
-        }
-
-        // Inject partial set analysis when set exists with {$1<
-        sets = m.match(/{\$1<(.*?)>}/g);
-        for (let s in sets) {
-          let newSet = sets[s].replace(/{\$1</, '{$1<$(vDimSetAuto)');
-          m = m.replaceAll(sets[s], newSet);
-        }
-
-        // Inject partial set analysis when set exists with {$}
-        sets = m.match(/{\$(.*?)}/g);
-        for (let s in sets) {
-          let newSet = sets[s].replace(/{\$}/, '{$<$(vDimSetPartialAuto)>}');
-          m = m.replaceAll(sets[s], newSet);
-        }
-
-        // Inject partial set analysis when set exists with {1}
-        sets = m.match(/\({1(.*?)}/g);
-        for (let s in sets) {
-          let newSet = sets[s].replace(/\{1\}/, '{1<$(vDimSetPartialAuto)>}');
-          m = m.replaceAll(sets[s], newSet);
-        }
-
-        // Inject partial set analysis when set exists with {0}
-        sets = m.match(/\({0(.*?)}/g);
-        for (let s in sets) {
-          let newSet = sets[s].replace(/\{0\}/, '{0<$(vDimSetPartialAuto)>}');
-          m = m.replaceAll(sets[s], newSet);
-        }
-
-        // Inject partial set analysis when set exists with {$1}
-        sets = m.match(/{\$1(.*?)}/g);
-        for (let s in sets) {
-          let newSet = sets[s].replace(/\{\$1\}/, '{$1<$(vDimSetPartialAuto)>}');
-          m = m.replaceAll(sets[s], newSet);
-        }
-
-
-        /* for (let a in aggr) {
-          let regex = new RegExp(`\${aggr}\\(\\w+\\)`.replace('${aggr}', aggr[a]), 'g');
-          let noSets = m.match(new RegExp(regex));
-          for (let n in noSets) {
-            let newNoSet = noSets[n].replace(`${aggr[a]}(`, `${aggr[a]}($(vDimSetFullAuto)`);
-            m = m.replaceAll(noSets[n], newNoSet);
-          }
-        } */
-
-        // Inject full set analysis when no set exists
-        for (let a in aggr) {
-          let tmpM = '';
-          let split = m.split(aggr[a] + '(');
-          let setType;
-          for (let i in split) {
-            // Not last item
-            if (i < split.length - 1) {
-              let next = (parseInt(i) + parseInt(1));
-              // Check to see if m contains set
-              let setTypes = ["{<", "{$<", "{1<", "{0<", "{$1<", "{$}", "{1}", "{0}", "{$1}"];
-              for (let s in setTypes) {
-                if (split[next].substring(0, setTypes[s].length).includes(setTypes[s])) {
-                  setType = setTypes[s];
-                  break;
-                }
-              }
-              // Does not include Set
-              if (typeof setType == 'undefined') {
-                tmpM += split[i] + aggr[a] + '($(vDimSetFullAuto)';
-              }
-              // Does include {<
-              else {
-                tmpM += split[i] + aggr[a] + '(';
+      // Inject full set analysis when no set exists
+      for (let a in aggr) {
+        let tmpM = '';
+        let split = m.split(aggr[a] + '(');
+        let setType;
+        for (let i in split) {
+          // Not last item
+          if (i < split.length - 1) {
+            let next = (parseInt(i) + parseInt(1));
+            // Check to see if m contains set
+            let setTypes = ["{<", "{$<", "{1<", "{0<", "{$1<", "{$}", "{1}", "{0}", "{$1}"];
+            for (let s in setTypes) {
+              if (split[next].substring(0, setTypes[s].length).includes(setTypes[s])) {
+                setType = setTypes[s];
+                break;
               }
             }
-            // Last item
+            // Does not include Set
+            if (typeof setType == 'undefined') {
+              tmpM += split[i] + aggr[a] + '($(vDimSetFullAuto)';
+            }
+            // Does include {<
             else {
-              tmpM += split[i];
+              tmpM += split[i] + aggr[a] + '(';
             }
           }
-          m = tmpM;
+          // Last item
+          else {
+            tmpM += split[i];
+          }
         }
+        m = tmpM;
+      }
 
-        // Add dummy formula to show all dimensions
-        if ($scope.layout.prop.showAllDims && showAll) {
-          m += " + 0*Sum({1}1)";
-        }
-        m = m.replaceAll('$(vDimSetFullAuto)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
-        m = m.replaceAll('$(vDimSetPartialAuto)', `[${dimName}]={'${dimValue}'}`);
-        m = m.replaceAll('$(vDimSetAuto)', `[${dimName}]={'${dimValue}'},`);
-        resolve(m);
+      // Add dummy formula to show all dimensions
+      if ($scope.layout.prop.showAllDims && showAll) {
+        m += " + 0*Sum({1}1)";
       }
-      else {
-        var d = m.replace(/=/g, "");
-        var dimension = `=If([${dimName}] = '${dimValue}', ${d})`;
-        resolve(dimension);
-      }
+      m = m.replaceAll('$(vDimSetFullAuto)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
+      m = m.replaceAll('$(vDimSetPartialAuto)', `[${dimName}]={'${dimValue}'}`);
+      m = m.replaceAll('$(vDimSetAuto)', `[${dimName}]={'${dimValue}'},`);
+      resolve(m);
     });
   }
 
