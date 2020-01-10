@@ -1034,7 +1034,29 @@ export default ['$scope', '$element', function ($scope, $element) {
       ? $element.find('.qlik-trellis-slide') : $element.find('.qlik-trellis-cell');
     var tasks = [];
     for (let i = 0; i < viz.length; i++) {
-      tasks.push(viz[i].show(trellisCells[i]));
+      let options;
+      location.search
+        .substr(1)
+        .split('&')
+        .forEach(val => {
+          const hash = val.split('=');
+          if (hash.length > 0) {
+            if (hash[0] === 'opt') {
+              let decodedVal = decodeURIComponent(hash[1]);
+              decodedVal = decodedVal.toLowerCase();
+              if (decodedVal.indexOf('nointeraction') > -1) { 
+                options = options || {};                 
+                options.noInteraction = true;
+              }
+
+              if (decodedVal.indexOf('noselections')) {
+                options = options || {};                 
+                options.noSelections = true;
+              }
+            }
+          }          
+        });
+      tasks.push(viz[i].show(trellisCells[i], options));
     }
 
     if (trellisCells.length > viz.length) {
