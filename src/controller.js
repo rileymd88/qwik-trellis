@@ -99,8 +99,42 @@ export default ['$scope', '$element', function ($scope, $element) {
         else {
           let rowArray = cube[0].cube1.map(item => item[0].qText);
           let colArray = cube[0].cube2.map(item => item[0].qText);
-          $scope.rowValues = [...new Set(rowArray.map(item => item))];
-          $scope.colValues = [...new Set(colArray.map(item => item))];
+
+          // Check if browser is Internet explorer
+          const isIE = /*@cc_on!@*/false || !!document.documentMode;
+          if (isIE) {
+            try {
+              // Remove duplicates from rowArray
+              let rowArrayLen = rowArray.length;
+              while (rowArrayLen > 0) {
+                for (let i = 0; i < rowArrayLen; i++) {
+                  if (rowArray[rowArrayLen] === rowArray[i]) {
+                    rowArray.splice(i, 1);
+                  }
+                }
+                rowArrayLen--;
+              }
+
+              // Remove duplicates from colArray
+              let colArrayLen = colArray.length;
+              while (colArrayLen > 0) {
+                for (let i = 0; i < colArrayLen; i++) {
+                  if (colArray[colArrayLen] === colArray[i]) {
+                    colArray.splice(i, 1);
+                  }
+                }
+                colArrayLen--;
+              }
+              
+              $scope.rowValues = rowArray;
+              $scope.colValues = colArray;
+            } catch (e) {
+              console.error(e);
+            }
+          } else {
+            $scope.rowValues = [...new Set(rowArray.map(item => item))];
+            $scope.colValues = [...new Set(colArray.map(item => item))];
+          }
           $scope.colNum = $scope.colValues.length;
           $scope.rowNum = $scope.rowValues.length;
         }
@@ -501,6 +535,7 @@ export default ['$scope', '$element', function ($scope, $element) {
               let dimValue = $scope.currentCube[q][0].qText;
               let dimName2;
               let dimValue2;
+              
               if ($scope.qtcProps && !$scope.layout.prop.advanced) {
                 var promise = getAndSetMeasures($scope.vizProp, dimName, dimValue, dimName2, dimValue2, $scope.qtcProps);
                 propPromises.push(promise);
