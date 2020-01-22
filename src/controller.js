@@ -1049,7 +1049,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                 options.noInteraction = true;
               }
 
-              if (decodedVal.indexOf('noselections')) {
+              if (decodedVal.indexOf('noselections') > -1) {
                 options = options || {};                 
                 options.noSelections = true;
               }
