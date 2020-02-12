@@ -21,8 +21,11 @@ export default {
     // If this is a master object, fetch the properties of the original object
     app.getObjectProperties(scope.layout.qExtendsId || scope.layout.qInfo.qId)
       .then(function (model) {
-        scope.sortCriterias = model.properties.qHyperCubeDef.qDimensions[0].qDef.qSortCriterias;
-        scope.nullSuppression = model.properties.qHyperCubeDef.qDimensions[0].qNullSuppression;
+        scope.sortCriterias = model.properties.qHyperCubeDef.qSortCriterias;
+        scope.sortCriterias1 = model.properties.qHyperCubeDef.qDimensions[0].qDef.qSortCriterias;
+        scope.nullSuppression1 = model.properties.qHyperCubeDef.qDimensions[0].qNullSuppression;
+        scope.sortCriterias2 = model.properties.qHyperCubeDef.qDimensions[1] ? model.properties.qHyperCubeDef.qDimensions[1].qDef.qSortCriterias : undefined;
+        scope.nullSuppression2 = model.properties.qHyperCubeDef.qDimensions[1] ? model.properties.qHyperCubeDef.qDimensions[1].qNullSuppression : undefined;
       });
   },
   support: {
