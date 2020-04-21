@@ -23,7 +23,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
   });
 
-  $scope.$watch("layout.qHyperCube.qDimensionInfo", function (newValue, oldValue) {
+  $scope.watchCollection("layout.qHyperCube.qDimensionInfo", function (newValue, oldValue) {
     if (newValue !== oldValue) {
       setupStyles().then(function () {
         createTrellisObjects();
@@ -397,7 +397,7 @@ export default ['$scope', '$element', function ($scope, $element) {
           }],
           "qMeasures": [{
             "qDef": {
-              "qDef": `Sum({1}1)`
+              "qDef": `Sum({$}1)`
             }
           }],
           "qSortCriterias": $scope.sortCriterias,
@@ -435,7 +435,7 @@ export default ['$scope', '$element', function ($scope, $element) {
           }],
           "qMeasures": [{
             "qDef": {
-              "qDef": `Sum({1}1)`
+              "qDef": `Sum({$}1)`
             }
           }],
           "qSortCriterias": $scope.sortCriterias,
@@ -461,7 +461,7 @@ export default ['$scope', '$element', function ($scope, $element) {
           }],
           "qMeasures": [{
             "qDef": {
-              "qDef": `Sum({1}1)`
+              "qDef": `Sum({$}1)`
             }
           }],
           "qSortCriterias": $scope.sortCriterias,
@@ -749,7 +749,7 @@ export default ['$scope', '$element', function ($scope, $element) {
           }
         }
         if ($scope.layout.prop.showAllDims && showAll) {
-          currentMes += " + 0*Sum({1}1)";
+          currentMes += " + 0*Sum({$}1)";
         }
         if (typeof dimName2 != 'undefined') {
           currentMes = currentMes.replaceAll('$(vDimSetFull)', `{<[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}>}`);
