@@ -1,54 +1,25 @@
-# Qwik Trellis
-Qwik Trellis is a Qlik Sense extension which allows you to create a trellis chart object based on an existing master vizulisation.
-![Qwik Trellis](https://raw.githubusercontent.com/rileymd88/data/master/qwik-trellis/qwiktrellis.PNG)
-![Qwik Trellis GIF](https://raw.githubusercontent.com/rileymd88/data/master/qwik-trellis/qwiktrellis2.gif)
+# Trellis container
+This extension is part of the extension bundles for Qlik Sense. The repository is maintained and moderated by Qlik RD.
 
-## Important Information
->This extension code requires building using webpack. You can NOT download the repo and directly install. To get the correct approved version download from the releases page (file: qwik-trellis.zip) and install directly into Qlik Sense.
+Feel free to fork and suggest pull requests for improvements and bug fixes. Changes will be moderated and reviewed before inclusion in future bundle versions. Please note that emphasis is on backward compatibility, i.e. breaking changes will most likely not be approved.
 
-* [GitHub releases page](https://github.com/rileymd88/qwik-trellis/releases)
+Usage documentation for the extension is available at https://help.qlik.com.
 
-Only developers need to use webpack
+# Developing the extension
+If you want to do code changes to the extension follow these simple steps to get going.
 
-## Release Notes v0.6
-* Added slide/mobile mode
+1. Get Qlik Sense Desktop
+1. Create a new app and add Trellis container to a sheet.
+2. Clone the repository
+3. Run `npm install`
+4. Run `npm run build` - to build a dev-version to the /dist folder.
+5. Move the content of the /dist folder to the extension directory. Usually in `C:/Users/<user>/Documents/Qlik/Sense/Extensions/qlik-trellis-container`.
 
-## Release Notes v0.5
-* Added limit to number of charts which can be created
-* Added support for objects which are not measure based
-* Issue with Qlik Sense Desktop Client fixed
-* Usability improvements
+# Resources Used in this Extension
+[Qwik Trellis by Riley MacDonald](https://github.com/rileymd88/qwik-trellis)
 
-## Release Notes v0.4
-* Ability to sort trellis charts using standard qlik sorting properties
-* IE11 Support added
-* Performance improvements and bug fixes
-* Updated build process
+# Original authors
+[github.com/rileymd88](https://github.com/rileymd88)
 
-## Release Notes v0.3
-* Ability to automatically set the same range for all charts
-* Ability to hide measure labels on one side only
-* Performance improvements and bug fixes
-
-## Release Notes v0.2
-* Ability to create Trellis chart based on master item and 1 dimension
-* Ability to hide dimension labels on one side only
-* Ability to force all dimensions to be shown
-* Advanced mode which allows full flexibility of how formulas are handled in the end trellis objects
-
-## Using Advanced Mode
-Qwik Trellis will try to automatically inject the correct set analysis into your formula, however if you need more flexibility then there is an advanced mode available. When advanced mode is turned on, Qwik Trellis will automatically replace all placeholders found within all formulas in the master item vizulisation with the following values:
-
-| Placeholders   | Values                                   |
-|----------------|------------------------------------------|
-| $(vDim)        | Dimension Name                           |
-| $(vDimValue)   | Dimension Value                          |
-| $(vDimSet)     | [Dimension Name]={'Dimension Value'},    |
-| $(vDimSetFull) | {<[Dimension Name]={'Dimension Value'}>} |
-
-
-
-
-
-
-
+# License
+Released under the [MIT License](LICENSE).

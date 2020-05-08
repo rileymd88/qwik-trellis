@@ -1,41 +1,73 @@
-// Imports
+const StyleLintPlugin = require('stylelint-webpack-plugin');
+const packageJSON = require('./package.json');
 const path = require('path');
-require("babel-register");
-require("@babel/polyfill");
 
-// Webpack Configuration
+const DIST = path.resolve("./dist");
+const MODE = process.env.NODE_ENV || 'development';
+const SOURCE_MAP = 'sourec-map';
+const DEVTOOL = (process.env.NODE_ENV === 'development') ? SOURCE_MAP : false;
+
+console.log('Webpack mode:', MODE); // eslint-disable-line no-console
+
 const config = {
-  // Entry
-  entry: ['@babel/polyfill','./src/qwik-trellis.js'],
-  
-  // Output
+  devtool: DEVTOOL,
+  entry: [
+    './src/index.js'
+  ],
+  mode: MODE,
   output: {
-    path: path.resolve(__dirname, './dist'),
-    filename: 'qwik-trellis.js',
+    filename: `${packageJSON.name}.js`,
+    libraryTarget: 'amd',
+    path: DIST
   },
-  // Loaders
+  externals: {
+    jquery: {
+      amd: 'jquery',
+      commonjs: 'jquery',
+      commonjs2: 'jquery',
+      root: '_'
+    },
+    qlik: {
+      amd: 'qlik',
+      commonjs: 'qlik',
+      commonjs2: 'qlik',
+      root: '_'
+    }
+  },
   module: {
-    rules : [
-      // JavaScript
+    rules: [
       {
+        enforce: "pre",
         test: /\.js$/,
-        exclude: /node_modules/,
-        use: ['babel-loader'],
+        exclude: /(node_modules|Library)/,
+        loader: "eslint-loader",
+        options: {
+          failOnError: true
+        }
       },
-      // HTML files
+      {
+        test: /.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
+        }
+      },
       {
         test: /\.html$/,
         loader: "html-loader"
       },
-      // CSS Files
       {
         test: /\.css$/,
         use: ['style-loader', 'css-loader'],
       }
     ]
   },
-  watch: true,
-  devtool: 'source-map'
+  plugins: [
+    new StyleLintPlugin()
+  ]
 };
-// Exports
+
 module.exports = config;
