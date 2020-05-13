@@ -704,7 +704,7 @@ export default ['$scope', '$element', function ($scope, $element) {
     }
   }
 
-  function createMeasure(m, dimName, dimValue, showAll, type) {
+  function createMeasure(m, dimName, dimValue, dimName2, dimValue2, showAll, type) {
     return new Promise(function (resolve, reject) {
       // List of in scope aggregations
       const aggr = ["Sum", "Avg", "Count", "Min", "Max"];
@@ -860,9 +860,16 @@ export default ['$scope', '$element', function ($scope, $element) {
       if ($scope.layout.prop.showAllDims && showAll) {
         m += " + 0*Sum({1}1)";
       }
-      m = m.replaceAll('$(vDimSetFullAuto)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
-      m = m.replaceAll('$(vDimSetPartialAuto)', `[${dimName}]={'${dimValue}'}`);
-      m = m.replaceAll('$(vDimSetAuto)', `[${dimName}]={'${dimValue}'},`);
+      if (typeof dimName2 != 'undefined') {
+        m = m.replaceAll('$(vDimSetFullAuto)', `{<[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}>}`);
+        m = m.replaceAll('$(vDimSetPartialAuto)', `,[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}`);
+        m = m.replaceAll('$(vDimSetAuto)', `'${dimValue}'`);
+      }
+      else {
+        m = m.replaceAll('$(vDimSetFullAuto)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
+        m = m.replaceAll('$(vDimSetPartialAuto)', `[${dimName}]={'${dimValue}'}`);
+        m = m.replaceAll('$(vDimSetAuto)', `[${dimName}]={'${dimValue}'},`);
+      }
       resolve(m);
     });
   }
@@ -983,10 +990,17 @@ export default ['$scope', '$element', function ($scope, $element) {
       try {
         var propsString = JSON.stringify(vizProp);
         if ($scope.layout.prop.advanced) {
-          propsString = propsString.replaceAll('$(vDimSetFull)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
-          propsString = propsString.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}`);
-          propsString = propsString.replaceAll('$(vDim)', `'${dimName}'`);
-          propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);
+          if (typeof dimName2 != 'undefined') {
+            propsString = propsString.replaceAll('$(vDimSetFull)', `{<[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}>}`);
+            propsString = propsString.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}`);
+            propsString = propsString.replaceAll('$(vDim)', `'${dimValue}'`);
+          }
+          else {
+            propsString = propsString.replaceAll('$(vDimSetFull)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
+            propsString = propsString.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}`);
+            propsString = propsString.replaceAll('$(vDim)', `'${dimName}'`);
+            propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);
+          }         
         }
         var props = JSON.parse(propsString);
         props.showTitles = true;
