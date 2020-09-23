@@ -754,62 +754,62 @@ export default ['$scope', '$element', function ($scope, $element) {
       let sets = m.match(/{<(.*?)>}/g);
       for (let s in sets) {
         let newSet = sets[s].replace(/{</, '{<$(vDimSetAuto)');
-        m = m.replaceAll(sets[s], newSet);
+        m = replaceAll(m, sets[s], newSet);
       }
       // Inject partial set analysis when set exists with {$<
       sets = m.match(/{\$<(.*?)>}/g);
       for (let s in sets) {
         let newSet = sets[s].replace(/{\$</, '{$<$(vDimSetAuto)');
-        m = m.replaceAll(sets[s], newSet);
+        m = replaceAll(m, sets[s], newSet);
       }
 
       // Inject partial set analysis when set exists with {1<
       sets = m.match(/{1<(.*?)>}/g);
       for (let s in sets) {
         let newSet = sets[s].replace(/{1</, '{1<$(vDimSetAuto)');
-        m = m.replaceAll(sets[s], newSet);
+        m = replaceAll(m, sets[s], newSet);
       }
 
       // Inject partial set analysis when set exists with {0<
       sets = m.match(/{0<(.*?)>}/g);
       for (let s in sets) {
         let newSet = sets[s].replace(/{0</, '{0<$(vDimSetAuto)');
-        m = m.replaceAll(sets[s], newSet);
+        m = replaceAll(m, sets[s], newSet);
       }
 
       // Inject partial set analysis when set exists with {$1<
       sets = m.match(/{\$1<(.*?)>}/g);
       for (let s in sets) {
         let newSet = sets[s].replace(/{\$1</, '{$1<$(vDimSetAuto)');
-        m = m.replaceAll(sets[s], newSet);
+        m = replaceAll(m, sets[s], newSet);
       }
 
       // Inject partial set analysis when set exists with {$}
       sets = m.match(/{\$(.*?)}/g);
       for (let s in sets) {
         let newSet = sets[s].replace(/{\$}/, '{$<$(vDimSetPartialAuto)>}');
-        m = m.replaceAll(sets[s], newSet);
+        m = replaceAll(m, sets[s], newSet);
       }
 
       // Inject partial set analysis when set exists with {1}
       sets = m.match(/\({1(.*?)}/g);
       for (let s in sets) {
         let newSet = sets[s].replace(/\{1\}/, '{1<$(vDimSetPartialAuto)>}');
-        m = m.replaceAll(sets[s], newSet);
+        m = replaceAll(m, sets[s], newSet);
       }
 
       // Inject partial set analysis when set exists with {0}
       sets = m.match(/\({0(.*?)}/g);
       for (let s in sets) {
         let newSet = sets[s].replace(/\{0\}/, '{0<$(vDimSetPartialAuto)>}');
-        m = m.replaceAll(sets[s], newSet);
+        m = replaceAll(m, sets[s], newSet);
       }
 
       // Inject partial set analysis when set exists with {$1}
       sets = m.match(/{\$1(.*?)}/g);
       for (let s in sets) {
         let newSet = sets[s].replace(/\{\$1\}/, '{$1<$(vDimSetPartialAuto)>}');
-        m = m.replaceAll(sets[s], newSet);
+        m = replaceAll(m, sets[s], newSet);
       }
 
 
@@ -818,7 +818,7 @@ export default ['$scope', '$element', function ($scope, $element) {
         let noSets = m.match(new RegExp(regex));
         for (let n in noSets) {
           let newNoSet = noSets[n].replace(`${aggr[a]}(`, `${aggr[a]}($(vDimSetFullAuto)`);
-          m = m.replaceAll(noSets[n], newNoSet);
+          m = replaceAll(m,noSets[n], newNoSet);
         }
       } */
 
@@ -861,14 +861,14 @@ export default ['$scope', '$element', function ($scope, $element) {
         m += " + 0*Sum({1}1)";
       }
       if (typeof dimName2 != 'undefined') {
-        m = m.replaceAll('$(vDimSetFullAuto)', `{<[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}>}`);
-        m = m.replaceAll('$(vDimSetPartialAuto)', `,[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}`);
-        m = m.replaceAll('$(vDimSetAuto)', `'${dimValue}'`);
+        m = replaceAll(m, '$(vDimSetFullAuto)', `{<[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}>}`);
+        m = replaceAll(m, '$(vDimSetPartialAuto)', `,[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}`);
+        m = replaceAll(m, '$(vDimSetAuto)', `'${dimValue}'`);
       }
       else {
-        m = m.replaceAll('$(vDimSetFullAuto)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
-        m = m.replaceAll('$(vDimSetPartialAuto)', `[${dimName}]={'${dimValue}'}`);
-        m = m.replaceAll('$(vDimSetAuto)', `[${dimName}]={'${dimValue}'},`);
+        m = replaceAll(m, '$(vDimSetFullAuto)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
+        m = replaceAll(m, '$(vDimSetPartialAuto)', `[${dimName}]={'${dimValue}'}`);
+        m = replaceAll(m, '$(vDimSetAuto)', `[${dimName}]={'${dimValue}'},`);
       }
       resolve(m);
     });
@@ -907,7 +907,7 @@ export default ['$scope', '$element', function ($scope, $element) {
                   continue;
                 }
 
-                // is lib item 
+                // is lib item
                 if (path.libCheck(props, i)) {
                   // get lib item
                   let m = await getMasterMeasure(path.libDef.get(props, i));
@@ -991,16 +991,16 @@ export default ['$scope', '$element', function ($scope, $element) {
         var propsString = JSON.stringify(vizProp);
         if ($scope.layout.prop.advanced) {
           if (typeof dimName2 != 'undefined') {
-            propsString = propsString.replaceAll('$(vDimSetFull)', `{<[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}>}`);
-            propsString = propsString.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}`);
-            propsString = propsString.replaceAll('$(vDim)', `'${dimValue}'`);
+            propsString = replaceAll(propsString, '$(vDimSetFull)', `{<[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}>}`);
+            propsString = replaceAll(propsString, '$(vDimSet)', `,[${dimName}]={'${dimValue}'}, [${dimName2}]={'${dimValue2}'}`);
+            propsString = replaceAll(propsString, '$(vDim)', `'${dimValue}'`);
           }
           else {
-            propsString = propsString.replaceAll('$(vDimSetFull)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
-            propsString = propsString.replaceAll('$(vDimSet)', `,[${dimName}]={'${dimValue}'}`);
-            propsString = propsString.replaceAll('$(vDim)', `'${dimName}'`);
-            propsString = propsString.replaceAll('$(vDimValue)', `'${dimValue}'`);
-          }         
+            propsString = replaceAll(propsString, '$(vDimSetFull)', "{<" + `[${dimName}]={'${dimValue}'}` + ">}");
+            propsString = replaceAll(propsString, '$(vDimSet)', `,[${dimName}]={'${dimValue}'}`);
+            propsString = replaceAll(propsString, '$(vDim)', `'${dimName}'`);
+            propsString = replaceAll(propsString, '$(vDimValue)', `'${dimValue}'`);
+          }
         }
         var props = JSON.parse(propsString);
         props.showTitles = true;
@@ -1209,14 +1209,13 @@ export default ['$scope', '$element', function ($scope, $element) {
     return Promise.all(tasks);
   }
 
-  String.prototype.replaceAll = function (searchStr, replaceStr) {
-    var str = this;
+  const replaceAll = function (str, searchStr, replaceStr) {
     // no match exists in string?
     if (str.indexOf(searchStr) === -1) {
       // return string
       return str;
     }
     // replace and remove first match, and do another recursirve search/replace
-    return (str.replace(searchStr, replaceStr)).replaceAll(searchStr, replaceStr);
+    return replaceAll(str.replace(searchStr, replaceStr), searchStr, replaceStr);
   };
 }];
